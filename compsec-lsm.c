@@ -74,9 +74,6 @@
 #ifdef CONFIG_SECURITY_COMPSEC 
 
 #define COPMSEC_CLASS_UNCLASSIFIED 0
-#define COMPSEC_CLASS_RESTIRCTED 1
-#define COMPSEC_CLASS_SECRET 2
-#define COMPSEC_CLASS_TOP_SECRET 3
 
 extern struct security_operations *security_ops;
 
