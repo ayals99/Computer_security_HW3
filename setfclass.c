@@ -14,6 +14,7 @@ static const unsigned int MAX_CLASS = 3;
 static const int MAX_NUMBER_OF_ARGS = 5;
 static const int MIN_NUMBER_OF_ARGS = 4;
 static int global_class_int;
+static const char COPMSEC_EA_NAME[] = "security.compsec";
 
 void print_usage(const char* program_name) {
 	fprintf(stderr, "Usage: %s -c class [-r] filename\n", program_name);
@@ -34,13 +35,11 @@ int validate_class(char* class, unsigned int *class_int) {
 	errno = 0;
 
 	unsigned int conversion = (unsigned int) strtol(class, &p, conversion_base);
-	if (errno)
-	{
+	if (errno) {
 		perror("Class conversion error");
 		return -1;
 	}
-	else if (*p)
-	{
+	else if (*p) {
 		perror("Not all characters converted in class");
 		return -1;
 	}
@@ -58,7 +57,7 @@ int validate_user_input(char *filename, char *class, unsigned int *class_int) {
 }
 
 int aux_set_class(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
-	if (setxattr(fpath, "security.compsec", &global_class_int, sizeof(unsigned int), 0) != 0) {
+	if (setxattr(fpath, COPMSEC_EA_NAME, &global_class_int, sizeof(unsigned int), 0) != 0) {
 		perror(fpath);
 	}
 	return 0;
@@ -101,7 +100,6 @@ int main(int argc, char *argv[]) {
 
 	ret = validate_user_input(filename, class, &class_int);
 	if (ret) {
-		printf("Class or Filename not valid\n");
 		return ret;
 	}
 
@@ -112,7 +110,6 @@ int main(int argc, char *argv[]) {
 
 	char *found_path = realpath(filename, file_path);
 	if (!found_path) {
- 		fprintf(stderr, "Could not resolve file path. File name: %s\n", filename);
 		return 1;
 	}
 
@@ -122,8 +119,7 @@ int main(int argc, char *argv[]) {
 		return ret;
 	}
 
-	if (setxattr(file_path, "security.compsec", &class_int, sizeof(unsigned int), 0) != 0) {
-		perror("setxattr");
+	if (setxattr(file_path, COPMSEC_EA_NAME, &class_int, sizeof(unsigned int), 0) != 0) {
 		return 1;
 	}
 
