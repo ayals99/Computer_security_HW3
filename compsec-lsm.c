@@ -5,9 +5,9 @@
  *
  *  Author:  Sara Bitan, <sarab@cs.technion.ac.il>
  *
- *	This program is free software; you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License version 2,
- *	as published by the Free Software Foundation.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License version 2,
+ *  as published by the Free Software Foundation.
  */
 
 #include <linux/init.h>
@@ -38,8 +38,8 @@
 #include <linux/netfilter_ipv6.h>
 #include <linux/tty.h>
 #include <net/icmp.h>
-#include <net/ip.h>		/* for local_port_range[] */
-#include <net/tcp.h>		/* struct or_callable used in sock_rcv_skb */
+#include <net/ip.h>    /* for local_port_range[] */
+#include <net/tcp.h>    /* struct or_callable used in sock_rcv_skb */
 #include <net/inet_connection_sock.h>
 #include <net/net_namespace.h>
 #include <net/netlabel.h>
@@ -48,14 +48,14 @@
 #include <linux/atomic.h>
 #include <linux/bitops.h>
 #include <linux/interrupt.h>
-#include <linux/netdevice.h>	/* for network interface checks */
+#include <linux/netdevice.h>  /* for network interface checks */
 #include <linux/netlink.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
 #include <linux/dccp.h>
 #include <linux/quota.h>
-#include <linux/un.h>		/* for Unix socket types */
-#include <net/af_unix.h>	/* for Unix socket types */
+#include <linux/un.h>    /* for Unix socket types */
+#include <net/af_unix.h>  /* for Unix socket types */
 #include <linux/parser.h>
 #include <linux/nfs_mount.h>
 #include <net/ipv6.h>
@@ -82,24 +82,24 @@ struct file_accesses {
 };
 
 static void print_bad_access(const char *process_name, u32 process_class,
-			     const char *file_name, u32 file_class)
+           const char *file_name, u32 file_class)
 {
   pr_info("compsec: %s, %u, %s, %u\n", process_name, process_class, file_name, file_class); 
 }
 
 static int compsec_set_mnt_opts(struct super_block *sb,
-				struct security_mnt_opts *opts)
+        struct security_mnt_opts *opts)
 {
   return 0;
 }
 
 static void compsec_sb_clone_mnt_opts(const struct super_block *oldsb,
-				                              struct super_block *newsb)
+                                      struct super_block *newsb)
 {
 }
 
 static int compsec_parse_opts_str(char *options,
-				                          struct security_mnt_opts *opts)
+                                  struct security_mnt_opts *opts)
 {
   return 0;
 }
@@ -113,7 +113,7 @@ static int compsec_sb_show_options(struct seq_file *m, struct super_block *sb)
 /* Hook functions begin here. */
 
 static int compsec_ptrace_access_check(struct task_struct *child,
-				                               unsigned int mode)
+                                       unsigned int mode)
 {
   return 0;
 }
@@ -124,15 +124,15 @@ static int compsec_ptrace_traceme(struct task_struct *parent)
 }
 
 static int compsec_capget(struct task_struct *target, kernel_cap_t *effective,
-			                    kernel_cap_t *inheritable, kernel_cap_t *permitted)
+                          kernel_cap_t *inheritable, kernel_cap_t *permitted)
 {
   return 0;
 }
 
 static int compsec_capset(struct cred *new, const struct cred *old,
-			                    const kernel_cap_t *effective,
-			                    const kernel_cap_t *inheritable,
-			                    const kernel_cap_t *permitted)
+                          const kernel_cap_t *effective,
+                          const kernel_cap_t *inheritable,
+                          const kernel_cap_t *permitted)
 {
   return 0;
 }
@@ -148,7 +148,7 @@ static int compsec_capset(struct cred *new, const struct cred *old,
  */
 
 static int compsec_capable(struct task_struct *tsk, const struct cred *cred,
-			   struct user_namespace *ns, int cap, int audit)
+         struct user_namespace *ns, int cap, int audit)
 {
   return 0;
 }
@@ -277,10 +277,10 @@ static int compsec_sb_statfs(struct dentry *dentry)
 }
 
 static int compsec_mount(char *dev_name,
-			 struct path *path,
-			 char *type,
-			 unsigned long flags,
-			 void *data)
+       struct path *path,
+       char *type,
+       unsigned long flags,
+       void *data)
 {
   return 0;
 }
@@ -310,8 +310,8 @@ static void compsec_inode_free_security(struct inode *inode)
 }
 
 static int compsec_inode_init_security(struct inode *inode, struct inode *dir,
-				       const struct qstr *qstr, char **name,
-				       void **value, size_t *len)
+               const struct qstr *qstr, char **name,
+               void **value, size_t *len)
 {
   return 0;
 }
@@ -323,7 +323,7 @@ static int compsec_inode_create(struct inode *dir, struct dentry *dentry, int ma
 
 static int compsec_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
 {
-  return 0;	
+  return 0;  
 }
 
 static int compsec_inode_unlink(struct inode *dir, struct dentry *dentry)
@@ -352,7 +352,7 @@ static int compsec_inode_mknod(struct inode *dir, struct dentry *dentry, int mod
 }
 
 static int compsec_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
-				struct inode *new_inode, struct dentry *new_dentry)
+        struct inode *new_inode, struct dentry *new_dentry)
 {
   return 0;
 }
@@ -385,14 +385,14 @@ static int compsec_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
 
 
 static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
-				  const void *value, size_t size, int flags)
+                                  const void *value, size_t size, int flags)
 {
-  return 0;	 
+  return 0;   
 }
 
 static void compsec_inode_post_setxattr(struct dentry *dentry, const char *name,
-					const void *value, size_t size,
-					int flags)
+                                        const void *value, size_t size,
+                                        int flags)
 {
 }
 
@@ -482,7 +482,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 }
 
 static int compsec_inode_setsecurity(struct inode *inode, const char *name,
-				                             const void *value, size_t size, int flags)
+                                     const void *value, size_t size, int flags)
 {
   struct file_accesses *fa;
   u32 file_class;
@@ -559,17 +559,17 @@ static int compsec_file_permission(struct file *file, int mask)
 
   if (mask == MAY_READ) {
     if (file_class <= process_class) {
-			return 0;
+      return 0;
     } else {
-	    print_bad_access(process_name, process_class, filename, file_class);
-	    return 1;
+      print_bad_access(process_name, process_class, filename, file_class);
+      return 1;
     }
   } else if (mask == MAY_WRITE) {
        if (file_class >= process_class) {
-	  return 0;
+    return 0;
        } else {
-	    print_bad_access(process_name, process_class, filename, file_class);
-	    return 1;
+      print_bad_access(process_name, process_class, filename, file_class);
+      return 1;
        }
   }
 
@@ -586,22 +586,22 @@ static void compsec_file_free_security(struct file *file)
 }
 
 static int compsec_file_ioctl(struct file *file, unsigned int cmd,
-			      unsigned long arg)
+            unsigned long arg)
 {
   return 0;
 }
 
 
 static int compsec_file_mmap(struct file *file, unsigned long reqprot,
-			     unsigned long prot, unsigned long flags,
-			     unsigned long addr, unsigned long addr_only)
+           unsigned long prot, unsigned long flags,
+           unsigned long addr, unsigned long addr_only)
 {
   return 0;
 }
 
 static int compsec_file_mprotect(struct vm_area_struct *vma,
-				 unsigned long reqprot,
-				 unsigned long prot)
+         unsigned long reqprot,
+         unsigned long prot)
 {
   return 0;
 }
@@ -612,7 +612,7 @@ static int compsec_file_lock(struct file *file, unsigned int cmd)
 }
 
 static int compsec_file_fcntl(struct file *file, unsigned int cmd,
-			      unsigned long arg)
+            unsigned long arg)
 {
   return 0;
 }
@@ -623,7 +623,7 @@ static int compsec_file_set_fowner(struct file *file)
 }
 
 static int compsec_file_send_sigiotask(struct task_struct *tsk,
-				       struct fown_struct *fown, int signum)
+               struct fown_struct *fown, int signum)
 {
   return 0;
 }
@@ -664,19 +664,19 @@ static void compsec_cred_free(struct cred *cred)
  * prepare a new set of credentials for modification
  */
 static int compsec_cred_prepare(struct cred *new, const struct cred *old,
-				gfp_t gfp)
+        gfp_t gfp)
 {
   const struct file_accesses *old_fi;
-	struct file_accesses *fi;
+  struct file_accesses *fi;
 
-	old_fi = old->security;
+  old_fi = old->security;
 
-	fi = kmemdup(old_fi, sizeof(struct file_accesses), gfp);
-	if (!fi)
-		return -ENOMEM;
+  fi = kmemdup(old_fi, sizeof(struct file_accesses), gfp);
+  if (!fi)
+    return -ENOMEM;
 
     new->security = fi;
-	
+  
     return 0;
 }
 
@@ -745,7 +745,7 @@ static int compsec_task_getioprio(struct task_struct *p)
 }
 
 static int compsec_task_setrlimit(struct task_struct *p, unsigned int resource,
-				  struct rlimit *new_rlim)
+          struct rlimit *new_rlim)
 {
 
   return 0;
@@ -767,7 +767,7 @@ static int compsec_task_movememory(struct task_struct *p)
 }
 
 static int compsec_task_kill(struct task_struct *p, struct siginfo *info,
-			     int sig, u32 secid)
+           int sig, u32 secid)
 {
   return 0;
 }
@@ -778,7 +778,7 @@ static int compsec_task_wait(struct task_struct *p)
 }
 
 static void compsec_task_to_inode(struct task_struct *p,
-				  struct inode *inode)
+          struct inode *inode)
 {
 }
 
@@ -821,13 +821,13 @@ static void compsec_task_to_inode(struct task_struct *p,
 
 
 static int compsec_socket_create(int family, int type,
-				 int protocol, int kern)
+         int protocol, int kern)
 {
   return 0;
 }
 
 static int compsec_socket_post_create(struct socket *sock, int family,
-				      int type, int protocol, int kern)
+              int type, int protocol, int kern)
 {
   return 0;
 }
@@ -857,13 +857,13 @@ static int compsec_socket_accept(struct socket *sock, struct socket *newsock)
 }
 
 static int compsec_socket_sendmsg(struct socket *sock, struct msghdr *msg,
-				  int size)
+          int size)
 {
   return 0;
 }
 
 static int compsec_socket_recvmsg(struct socket *sock, struct msghdr *msg,
-				  int size, int flags)
+          int size, int flags)
 {
   return 0;
 }
@@ -884,7 +884,7 @@ static int compsec_socket_setsockopt(struct socket *sock, int level, int optname
 }
 
 static int compsec_socket_getsockopt(struct socket *sock, int level,
-				     int optname)
+             int optname)
 {
   return 0;
 }
@@ -895,14 +895,14 @@ static int compsec_socket_shutdown(struct socket *sock, int how)
 }
 
 static int compsec_socket_unix_stream_connect(struct sock *sock,
-					      struct sock *other,
-					      struct sock *newsk)
+                struct sock *other,
+                struct sock *newsk)
 {
   return 0;
 }
 
 static int compsec_socket_unix_may_send(struct socket *sock,
-					struct socket *other)
+          struct socket *other)
 {
   return 0;
 }
@@ -915,7 +915,7 @@ static int compsec_socket_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
 }
 
 static int compsec_socket_getpeersec_stream(struct socket *sock, char __user *optval,
-					    int __user *optlen, unsigned len)
+              int __user *optlen, unsigned len)
 {
   return 0;
 }
@@ -947,13 +947,13 @@ static void compsec_sock_graft(struct sock *sk, struct socket *parent)
 }
 
 static int compsec_inet_conn_request(struct sock *sk, struct sk_buff *skb,
-				     struct request_sock *req)
+             struct request_sock *req)
 {
   return 0;
 }
 
 static void compsec_inet_csk_clone(struct sock *newsk,
-				   const struct request_sock *req)
+           const struct request_sock *req)
 {
 }
 
@@ -975,7 +975,7 @@ static void compsec_secmark_refcount_dec(void)
 }
 
 static void compsec_req_classify_flow(const struct request_sock *req,
-				      struct flowi *fl)
+              struct flowi *fl)
 {
 }
 
@@ -1015,7 +1015,7 @@ static int compsec_msg_msg_alloc_security(struct msg_msg *msg)
 
 static void compsec_msg_msg_free_security(struct msg_msg *msg)
 {
-	
+  
 }
 
 /* message queue security operations */
@@ -1045,8 +1045,8 @@ static int compsec_msg_queue_msgsnd(struct msg_queue *msq, struct msg_msg *msg, 
 }
 
 static int compsec_msg_queue_msgrcv(struct msg_queue *msq, struct msg_msg *msg,
-				                            struct task_struct *target,
-				                            long type, int mode)
+                                    struct task_struct *target,
+                                    long type, int mode)
 {
   return 0;
 }
@@ -1073,7 +1073,7 @@ static int compsec_shm_shmctl(struct shmid_kernel *shp, int cmd)
 }
 
 static int compsec_shm_shmat(struct shmid_kernel *shp,
-			     char __user *shmaddr, int shmflg)
+           char __user *shmaddr, int shmflg)
 {
   return 0;
 }
@@ -1100,7 +1100,7 @@ static int compsec_sem_semctl(struct sem_array *sma, int cmd)
 }
 
 static int compsec_sem_semop(struct sem_array *sma,
-			     struct sembuf *sops, unsigned nsops, int alter)
+           struct sembuf *sops, unsigned nsops, int alter)
 {
   return 0;
 }
@@ -1119,13 +1119,13 @@ static void compsec_d_instantiate(struct dentry *dentry, struct inode *inode)
 }
 
 static int compsec_getprocattr(struct task_struct *p,
-			       char *name, char **value)
+             char *name, char **value)
 {
   return 0;
 }
 
 static int compsec_setprocattr(struct task_struct *p,
-			       char *name, void *value, size_t size)
+             char *name, void *value, size_t size)
 {
   return 0;
 }
@@ -1145,7 +1145,7 @@ static void compsec_release_secctx(char *secdata, u32 seclen)
 }
 
 /*
- *	called with inode->i_mutex locked
+ *  called with inode->i_mutex locked
  */
 static int compsec_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
 {
@@ -1153,7 +1153,7 @@ static int compsec_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen
 }
 
 /*
- *	called with inode->i_mutex locked
+ *  called with inode->i_mutex locked
  */
 static int compsec_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
 {
@@ -1167,7 +1167,7 @@ static int compsec_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
 #ifdef CONFIG_KEYS
 
 static int compsec_key_alloc(struct key *k, const struct cred *cred,
-			     unsigned long flags)
+           unsigned long flags)
 {
   return 0;
 }
@@ -1177,8 +1177,8 @@ static void compsec_key_free(struct key *k)
 }
 
 static int compsec_key_permission(key_ref_t key_ref,
-				  const struct cred *cred,
-				  key_perm_t perm)
+          const struct cred *cred,
+          key_perm_t perm)
 {
   return 0;
 }
@@ -1191,181 +1191,181 @@ static int compsec_key_getsecurity(struct key *key, char **_buffer)
 #endif
 
 static struct security_operations compsec_ops = {
-  .name =				"compsec",
+  .name =        "compsec",
 
-  .ptrace_access_check =		compsec_ptrace_access_check,
-  .ptrace_traceme =		compsec_ptrace_traceme,
-  .capget =			compsec_capget,
-  .capset =			compsec_capset,
-  .capable =			compsec_capable,
-  .quotactl =			compsec_quotactl,
-  .quota_on =			compsec_quota_on,
-  .syslog =			compsec_syslog,
-  .vm_enough_memory =		compsec_vm_enough_memory,
+  .ptrace_access_check =      compsec_ptrace_access_check,
+  .ptrace_traceme =           compsec_ptrace_traceme,
+  .capget =                   compsec_capget,
+  .capset =                   compsec_capset,
+  .capable =                  compsec_capable,
+  .quotactl =                 compsec_quotactl,
+  .quota_on =                 compsec_quota_on,
+  .syslog =                   compsec_syslog,
+  .vm_enough_memory =         compsec_vm_enough_memory,
 
-  .netlink_send =			compsec_netlink_send,
-  .netlink_recv =			compsec_netlink_recv,
+  .netlink_send =             compsec_netlink_send,
+  .netlink_recv =             compsec_netlink_recv,
 
-  .bprm_set_creds =		compsec_bprm_set_creds,
-  .bprm_check_security = 		compsec_bprm_check_security,
-  .bprm_committing_creds =	compsec_bprm_committing_creds,
-  .bprm_committed_creds =		compsec_bprm_committed_creds,
-  .bprm_secureexec =		compsec_bprm_secureexec,
+  .bprm_set_creds =           compsec_bprm_set_creds,
+  .bprm_check_security =      compsec_bprm_check_security,
+  .bprm_committing_creds =    compsec_bprm_committing_creds,
+  .bprm_committed_creds =     compsec_bprm_committed_creds,
+  .bprm_secureexec =          compsec_bprm_secureexec,
 
-  .sb_alloc_security =		compsec_sb_alloc_security,
-  .sb_free_security =		compsec_sb_free_security,
-  .sb_copy_data =			compsec_sb_copy_data,
-  .sb_remount =			compsec_sb_remount,
-  .sb_kern_mount =		compsec_sb_kern_mount,
-  .sb_show_options =		compsec_sb_show_options,
-  .sb_statfs =			compsec_sb_statfs,
-  .sb_mount =			compsec_mount,
-  .sb_umount =			compsec_umount,
-  .sb_set_mnt_opts =		compsec_set_mnt_opts,
-  .sb_clone_mnt_opts =		compsec_sb_clone_mnt_opts,
-  .sb_parse_opts_str = 		compsec_parse_opts_str,
+  .sb_alloc_security =        compsec_sb_alloc_security,
+  .sb_free_security =         compsec_sb_free_security,
+  .sb_copy_data =             compsec_sb_copy_data,
+  .sb_remount =               compsec_sb_remount,
+  .sb_kern_mount =            compsec_sb_kern_mount,
+  .sb_show_options =          compsec_sb_show_options,
+  .sb_statfs =                compsec_sb_statfs,
+  .sb_mount =                 compsec_mount,
+  .sb_umount =                compsec_umount,
+  .sb_set_mnt_opts =          compsec_set_mnt_opts,
+  .sb_clone_mnt_opts =        compsec_sb_clone_mnt_opts,
+  .sb_parse_opts_str =        compsec_parse_opts_str,
 
 
-  .inode_alloc_security =		compsec_inode_alloc_security,
-  .inode_free_security =		compsec_inode_free_security,
-  .inode_init_security =		compsec_inode_init_security,
-  .inode_create =			compsec_inode_create,
-  .inode_link =			compsec_inode_link,
-  .inode_unlink =			compsec_inode_unlink,
-  .inode_symlink =		compsec_inode_symlink,
-  .inode_mkdir =			compsec_inode_mkdir,
-  .inode_rmdir =			compsec_inode_rmdir,
-  .inode_mknod =			compsec_inode_mknod,
-  .inode_rename =			compsec_inode_rename,
-  .inode_readlink =		compsec_inode_readlink,
-  .inode_follow_link =		compsec_inode_follow_link,
-  .inode_permission =		compsec_inode_permission,
-  .inode_setattr =		compsec_inode_setattr,
-  .inode_getattr =		compsec_inode_getattr,
-  .inode_setxattr =		compsec_inode_setxattr,
-  .inode_post_setxattr =		compsec_inode_post_setxattr,
-  .inode_getxattr =		compsec_inode_getxattr,
-  .inode_listxattr =		compsec_inode_listxattr,
-  .inode_removexattr =		compsec_inode_removexattr,
-  .inode_getsecurity =		compsec_inode_getsecurity,
-  .inode_setsecurity =		compsec_inode_setsecurity,
-  .inode_listsecurity =		compsec_inode_listsecurity,
-  .inode_getsecid =		compsec_inode_getsecid,
+  .inode_alloc_security =     compsec_inode_alloc_security,
+  .inode_free_security =      compsec_inode_free_security,
+  .inode_init_security =      compsec_inode_init_security,
+  .inode_create =             compsec_inode_create,
+  .inode_link =               compsec_inode_link,
+  .inode_unlink =             compsec_inode_unlink,
+  .inode_symlink =            compsec_inode_symlink,
+  .inode_mkdir =              compsec_inode_mkdir,
+  .inode_rmdir =              compsec_inode_rmdir,
+  .inode_mknod =              compsec_inode_mknod,
+  .inode_rename =             compsec_inode_rename,
+  .inode_readlink =           compsec_inode_readlink,
+  .inode_follow_link =        compsec_inode_follow_link,
+  .inode_permission =         compsec_inode_permission,
+  .inode_setattr =            compsec_inode_setattr,
+  .inode_getattr =            compsec_inode_getattr,
+  .inode_setxattr =           compsec_inode_setxattr,
+  .inode_post_setxattr =      compsec_inode_post_setxattr,
+  .inode_getxattr =           compsec_inode_getxattr,
+  .inode_listxattr =          compsec_inode_listxattr,
+  .inode_removexattr =        compsec_inode_removexattr,
+  .inode_getsecurity =        compsec_inode_getsecurity,
+  .inode_setsecurity =        compsec_inode_setsecurity,
+  .inode_listsecurity =       compsec_inode_listsecurity,
+  .inode_getsecid =           compsec_inode_getsecid,
 
-  .file_permission =		compsec_file_permission,
-  .file_alloc_security =		compsec_file_alloc_security,
-  .file_free_security =		compsec_file_free_security,
-  .file_ioctl =			compsec_file_ioctl,
-  .file_mmap =			compsec_file_mmap,
-  .file_mprotect =		compsec_file_mprotect,
-  .file_lock =			compsec_file_lock,
-  .file_fcntl =			compsec_file_fcntl,
-  .file_set_fowner =		compsec_file_set_fowner,
-  .file_send_sigiotask =		compsec_file_send_sigiotask,
-  .file_receive =			compsec_file_receive,
+  .file_permission =          compsec_file_permission,
+  .file_alloc_security =      compsec_file_alloc_security,
+  .file_free_security =       compsec_file_free_security,
+  .file_ioctl =               compsec_file_ioctl,
+  .file_mmap =                compsec_file_mmap,
+  .file_mprotect =            compsec_file_mprotect,
+  .file_lock =                compsec_file_lock,
+  .file_fcntl =               compsec_file_fcntl,
+  .file_set_fowner =          compsec_file_set_fowner,
+  .file_send_sigiotask =      compsec_file_send_sigiotask,
+  .file_receive =             compsec_file_receive,
 
-  .dentry_open =			compsec_dentry_open,
+  .dentry_open =              compsec_dentry_open,
 
-  .task_create =			compsec_task_create,
-  .cred_alloc_blank =		compsec_cred_alloc_blank,
-  .cred_free =			compsec_cred_free,
-  .cred_prepare =			compsec_cred_prepare,
-  .cred_transfer =		compsec_cred_transfer,
-  .kernel_act_as =		compsec_kernel_act_as,
-  .kernel_create_files_as =	compsec_kernel_create_files_as,
-  .kernel_module_request =	compsec_kernel_module_request,
-  .task_setpgid =			compsec_task_setpgid,
-  .task_getpgid =			compsec_task_getpgid,
-  .task_getsid =			compsec_task_getsid,
-  .task_getsecid =		compsec_task_getsecid,
-  .task_setnice =			compsec_task_setnice,
-  .task_setioprio =		compsec_task_setioprio,
-  .task_getioprio =		compsec_task_getioprio,
-  .task_setrlimit =		compsec_task_setrlimit,
-  .task_setscheduler =		compsec_task_setscheduler,
-  .task_getscheduler =		compsec_task_getscheduler,
-  .task_movememory =		compsec_task_movememory,
-  .task_kill =			compsec_task_kill,
-  .task_wait =			compsec_task_wait,
-  .task_to_inode =		compsec_task_to_inode,
+  .task_create =              compsec_task_create,
+  .cred_alloc_blank =         compsec_cred_alloc_blank,
+  .cred_free =                compsec_cred_free,
+  .cred_prepare =             compsec_cred_prepare,
+  .cred_transfer =            compsec_cred_transfer,
+  .kernel_act_as =            compsec_kernel_act_as,
+  .kernel_create_files_as =   compsec_kernel_create_files_as,
+  .kernel_module_request =    compsec_kernel_module_request,
+  .task_setpgid =             compsec_task_setpgid,
+  .task_getpgid =             compsec_task_getpgid,
+  .task_getsid =              compsec_task_getsid,
+  .task_getsecid =            compsec_task_getsecid,
+  .task_setnice =             compsec_task_setnice,
+  .task_setioprio =           compsec_task_setioprio,
+  .task_getioprio =           compsec_task_getioprio,
+  .task_setrlimit =           compsec_task_setrlimit,
+  .task_setscheduler =        compsec_task_setscheduler,
+  .task_getscheduler =        compsec_task_getscheduler,
+  .task_movememory =          compsec_task_movememory,
+  .task_kill =                compsec_task_kill,
+  .task_wait =                compsec_task_wait,
+  .task_to_inode =            compsec_task_to_inode,
 
-  .ipc_permission =		compsec_ipc_permission,
-  .ipc_getsecid =			compsec_ipc_getsecid,
+  .ipc_permission =           compsec_ipc_permission,
+  .ipc_getsecid =             compsec_ipc_getsecid,
 
-  .msg_msg_alloc_security =	compsec_msg_msg_alloc_security,
-  .msg_msg_free_security =	compsec_msg_msg_free_security,
+  .msg_msg_alloc_security =   compsec_msg_msg_alloc_security,
+  .msg_msg_free_security =    compsec_msg_msg_free_security,
 
-  .msg_queue_alloc_security =	compsec_msg_queue_alloc_security,
-  .msg_queue_free_security =	compsec_msg_queue_free_security,
-  .msg_queue_associate =		compsec_msg_queue_associate,
-  .msg_queue_msgctl =		compsec_msg_queue_msgctl,
-  .msg_queue_msgsnd =		compsec_msg_queue_msgsnd,
-  .msg_queue_msgrcv =		compsec_msg_queue_msgrcv,
+  .msg_queue_alloc_security = compsec_msg_queue_alloc_security,
+  .msg_queue_free_security =  compsec_msg_queue_free_security,
+  .msg_queue_associate =      compsec_msg_queue_associate,
+  .msg_queue_msgctl =         compsec_msg_queue_msgctl,
+  .msg_queue_msgsnd =         compsec_msg_queue_msgsnd,
+  .msg_queue_msgrcv =         compsec_msg_queue_msgrcv,
 
-  .shm_alloc_security =		compsec_shm_alloc_security,
-  .shm_free_security =		compsec_shm_free_security,
-  .shm_associate =		compsec_shm_associate,
-  .shm_shmctl =			compsec_shm_shmctl,
-  .shm_shmat =			compsec_shm_shmat,
+  .shm_alloc_security =       compsec_shm_alloc_security,
+  .shm_free_security =        compsec_shm_free_security,
+  .shm_associate =            compsec_shm_associate,
+  .shm_shmctl =               compsec_shm_shmctl,
+  .shm_shmat =                compsec_shm_shmat,
 
-  .sem_alloc_security =		compsec_sem_alloc_security,
-  .sem_free_security =		compsec_sem_free_security,
-  .sem_associate =		compsec_sem_associate,
-  .sem_semctl =			compsec_sem_semctl,
-  .sem_semop =			compsec_sem_semop,
+  .sem_alloc_security =       compsec_sem_alloc_security,
+  .sem_free_security =        compsec_sem_free_security,
+  .sem_associate =            compsec_sem_associate,
+  .sem_semctl =               compsec_sem_semctl,
+  .sem_semop =                compsec_sem_semop,
 
-  .d_instantiate =		compsec_d_instantiate,
+  .d_instantiate =            compsec_d_instantiate,
 
-  .getprocattr =			compsec_getprocattr,
-  .setprocattr =			compsec_setprocattr,
+  .getprocattr =              compsec_getprocattr,
+  .setprocattr =              compsec_setprocattr,
 
-  .secid_to_secctx =		compsec_secid_to_secctx,
-  .secctx_to_secid =		compsec_secctx_to_secid,
-  .release_secctx =		compsec_release_secctx,
-  .inode_notifysecctx =		compsec_inode_notifysecctx,
-  .inode_setsecctx =		compsec_inode_setsecctx,
-  .inode_getsecctx =		compsec_inode_getsecctx,
+  .secid_to_secctx =          compsec_secid_to_secctx,
+  .secctx_to_secid =          compsec_secctx_to_secid,
+  .release_secctx =           compsec_release_secctx,
+  .inode_notifysecctx =       compsec_inode_notifysecctx,
+  .inode_setsecctx =          compsec_inode_setsecctx,
+  .inode_getsecctx =          compsec_inode_getsecctx,
 
-  .unix_stream_connect =		compsec_socket_unix_stream_connect,
-  .unix_may_send =		compsec_socket_unix_may_send,
+  .unix_stream_connect =      compsec_socket_unix_stream_connect,
+  .unix_may_send =            compsec_socket_unix_may_send,
 
-  .socket_create =		compsec_socket_create,
-  .socket_post_create =		compsec_socket_post_create,
-  .socket_bind =			compsec_socket_bind,
-  .socket_connect =		compsec_socket_connect,
-  .socket_listen =		compsec_socket_listen,
-  .socket_accept =		compsec_socket_accept,
-  .socket_sendmsg =		compsec_socket_sendmsg,
-  .socket_recvmsg =		compsec_socket_recvmsg,
-  .socket_getsockname =		compsec_socket_getsockname,
-  .socket_getpeername =		compsec_socket_getpeername,
-  .socket_getsockopt =		compsec_socket_getsockopt,
-  .socket_setsockopt =		compsec_socket_setsockopt,
-  .socket_shutdown =		compsec_socket_shutdown,
-  .socket_sock_rcv_skb =		compsec_socket_sock_rcv_skb,
-  .socket_getpeersec_stream =	compsec_socket_getpeersec_stream,
-  .socket_getpeersec_dgram =	compsec_socket_getpeersec_dgram,
-  .sk_alloc_security =		compsec_sk_alloc_security,
-  .sk_free_security =		compsec_sk_free_security,
-  .sk_clone_security =		compsec_sk_clone_security,
-  .sk_getsecid =			compsec_sk_getsecid,
-  .sock_graft =			compsec_sock_graft,
-  .inet_conn_request =		compsec_inet_conn_request,
-  .inet_csk_clone =		compsec_inet_csk_clone,
-  .inet_conn_established =	compsec_inet_conn_established,
-  .secmark_relabel_packet =	compsec_secmark_relabel_packet,
-  .secmark_refcount_inc =		compsec_secmark_refcount_inc,
-  .secmark_refcount_dec =		compsec_secmark_refcount_dec,
-  .req_classify_flow =		compsec_req_classify_flow,
-  .tun_dev_create =		compsec_tun_dev_create,
-  .tun_dev_post_create = 		compsec_tun_dev_post_create,
-  .tun_dev_attach =		compsec_tun_dev_attach,
+  .socket_create =            compsec_socket_create,
+  .socket_post_create =       compsec_socket_post_create,
+  .socket_bind =              compsec_socket_bind,
+  .socket_connect =           compsec_socket_connect,
+  .socket_listen =            compsec_socket_listen,
+  .socket_accept =            compsec_socket_accept,
+  .socket_sendmsg =           compsec_socket_sendmsg,
+  .socket_recvmsg =           compsec_socket_recvmsg,
+  .socket_getsockname =       compsec_socket_getsockname,
+  .socket_getpeername =       compsec_socket_getpeername,
+  .socket_getsockopt =        compsec_socket_getsockopt,
+  .socket_setsockopt =        compsec_socket_setsockopt,
+  .socket_shutdown =          compsec_socket_shutdown,
+  .socket_sock_rcv_skb =      compsec_socket_sock_rcv_skb,
+  .socket_getpeersec_stream = compsec_socket_getpeersec_stream,
+  .socket_getpeersec_dgram =  compsec_socket_getpeersec_dgram,
+  .sk_alloc_security =        compsec_sk_alloc_security,
+  .sk_free_security =         compsec_sk_free_security,
+  .sk_clone_security =        compsec_sk_clone_security,
+  .sk_getsecid =              compsec_sk_getsecid,
+  .sock_graft =               compsec_sock_graft,
+  .inet_conn_request =        compsec_inet_conn_request,
+  .inet_csk_clone =           compsec_inet_csk_clone,
+  .inet_conn_established =    compsec_inet_conn_established,
+  .secmark_relabel_packet =   compsec_secmark_relabel_packet,
+  .secmark_refcount_inc =     compsec_secmark_refcount_inc,
+  .secmark_refcount_dec =     compsec_secmark_refcount_dec,
+  .req_classify_flow =        compsec_req_classify_flow,
+  .tun_dev_create =           compsec_tun_dev_create,
+  .tun_dev_post_create =      compsec_tun_dev_post_create,
+  .tun_dev_attach =           compsec_tun_dev_attach,
 
 #ifdef CONFIG_KEYS
-  .key_alloc =			compsec_key_alloc,
-  .key_free =			compsec_key_free,
-  .key_permission =		compsec_key_permission,
-  .key_getsecurity =		compsec_key_getsecurity,
+  .key_alloc =                compsec_key_alloc,
+  .key_free =                 compsec_key_free,
+  .key_permission =           compsec_key_permission,
+  .key_getsecurity =          compsec_key_getsecurity,
 #endif
 
 };
@@ -1386,7 +1386,7 @@ static __init int compsec_init(void)
 }
 
 static void __exit compsec_exit (void)
-{	
+{  
   return;
 }
 

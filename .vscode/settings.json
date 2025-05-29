@@ -4,5 +4,6 @@
         "string.h": "c",
         "types.h": "c",
         "limits.h": "c"
-    }
+    },
+    "editor.rulers": [80, 100]
 }
