@@ -714,6 +714,7 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old,
                                 gfp_t gfp)
 {
   const struct file_accesses *old_fi;
+  struct file_accesses new_security_struct;
 
   new->security = kmalloc(sizeof(struct file_accesses), gfp);
   if (!new->security)
@@ -724,8 +725,10 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old,
   if (!old_fi)
     return -EACCES;
 
-  new->security->class = old_fi->class;
+  new_security_struct = new->security;
+  new_security_struct->class = old_fi->class;
 
+  memcpy((void*)new->security, (void*)&new_security_struct, sizeof(struct file_accesses));
   return 0;
 }
 
