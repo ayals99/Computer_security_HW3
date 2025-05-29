@@ -748,7 +748,7 @@ static int compsec_task_getioprio(struct task_struct *p)
 }
 
 static int compsec_task_setrlimit(struct task_struct *p, unsigned int resource,
-          struct rlimit *new_rlim)
+                                  struct rlimit *new_rlim)
 {
 
   return 0;
@@ -948,13 +948,13 @@ static void compsec_sock_graft(struct sock *sk, struct socket *parent)
 }
 
 static int compsec_inet_conn_request(struct sock *sk, struct sk_buff *skb,
-             struct request_sock *req)
+                                     struct request_sock *req)
 {
   return 0;
 }
 
 static void compsec_inet_csk_clone(struct sock *newsk,
-           const struct request_sock *req)
+                                   const struct request_sock *req)
 {
 }
 
@@ -976,7 +976,7 @@ static void compsec_secmark_refcount_dec(void)
 }
 
 static void compsec_req_classify_flow(const struct request_sock *req,
-              struct flowi *fl)
+                                      struct flowi *fl)
 {
 }
 
@@ -1100,8 +1100,8 @@ static int compsec_sem_semctl(struct sem_array *sma, int cmd)
   return 0;
 }
 
-static int compsec_sem_semop(struct sem_array *sma,
-           struct sembuf *sops, unsigned nsops, int alter)
+static int compsec_sem_semop(struct sem_array *sma, struct sembuf *sops,
+                             unsigned nsops, int alter)
 {
   return 0;
 }
@@ -1119,14 +1119,13 @@ static void compsec_d_instantiate(struct dentry *dentry, struct inode *inode)
 {
 }
 
-static int compsec_getprocattr(struct task_struct *p,
-             char *name, char **value)
+static int compsec_getprocattr(struct task_struct *p, char *name, char **value)
 {
   return 0;
 }
 
-static int compsec_setprocattr(struct task_struct *p,
-             char *name, void *value, size_t size)
+static int compsec_setprocattr(struct task_struct *p, char *name, void *value,
+                               size_t size)
 {
   return 0;
 }
@@ -1168,7 +1167,7 @@ static int compsec_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
 #ifdef CONFIG_KEYS
 
 static int compsec_key_alloc(struct key *k, const struct cred *cred,
-           unsigned long flags)
+                             unsigned long flags)
 {
   return 0;
 }
@@ -1191,7 +1190,7 @@ static int compsec_key_getsecurity(struct key *key, char **_buffer)
 #endif
 
 static struct security_operations compsec_ops = {
-  .name =        "compsec",
+  .name =                     "compsec",
 
   .ptrace_access_check =      compsec_ptrace_access_check,
   .ptrace_traceme =           compsec_ptrace_traceme,
