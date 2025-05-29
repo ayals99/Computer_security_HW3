@@ -81,8 +81,8 @@ struct file_accesses {
   u32 class;
 };
 
-static void print_bad_access(char *process_name, u32 process_class,
-			                       char *file_name, u32 file_class)
+static void print_bad_access(const char *process_name, u32 process_class,
+			     const char *file_name, u32 file_class)
 {
   pr_info("compsec: %s, %u, %s, %u\n", process_name, process_class, file_name, file_class); 
 }
@@ -185,28 +185,28 @@ static int compsec_vm_enough_memory(struct mm_struct *mm, long pages)
 
 static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 {
-  const struct file_accesses *old_fi;
-  struct file_accesses *new_fi;
+  struct file_accesses *file_security;
+  struct file_accesses *process_security;
   struct inode *inode;
 
-  inode = bprm->file->f_path.dentry->d_inode;
-	
   if (current->pid == 1)
     return 0; // allow init to do anything
 
   if (bprm->cred_prepared)
     return 0;
 
-  new_fi = (struct file_accesses *)bprm->cred->security;
-  if (!new_fi)
+  process_security = (struct file_accesses *)bprm->cred->security;
+  if (!process_security)
     return 1;
 
-  if (!inode->i_security) {
-    new_fi->class = COPMSEC_CLASS_UNCLASSIFIED;
+  inode = bprm->file->f_path.dentry->d_inode;
+  file_security = (struct file_accesses *) inode->i_security;
+  if (file_security) {
+    process_security->class = COPMSEC_CLASS_UNCLASSIFIED;
     return 0;
   }
 
-  new_fi->class = inode->i_security->class;
+  process_security->class = file_security->class;
 
   return 0;
 }
@@ -408,16 +408,15 @@ static int compsec_inode_listxattr(struct dentry *dentry)
 
 static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
 {
-  if (current->pid == 1) {
-    return 0; // allow init to do anything
-  }
-
   struct inode *inode;
   struct file_accesses *fa;
   struct file_accesses *process_security;
   u32 file_class;
   u32 process_class;
-  char process_name[sizeof(current->comm)];
+
+  if (current->pid == 1) {
+    return 0; // allow init to do anything
+  }
 
   inode = dentry->d_inode;
 
@@ -448,18 +447,16 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
  */
 static int compsec_inode_getsecurity(const struct inode *inode, const char *name, void **buffer, bool alloc)
 {
-  if (current->pid == 1) {
-    return 0; // allow init to do anything
-  }
-
-  struct file_accesses *fa;
+    struct file_accesses *fa;
   u32 file_class;
   struct file_accesses *process_security;
   u32 process_class;
   
-  if (!alloc) {
+  if (current->pid == 1)
+    return 0; // allow init to do anything
+
+  if (!alloc)
     return 1;
-  }
 
   fa = (struct file_accesses*)inode->i_security;
   if (!fa) {
@@ -487,15 +484,14 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 static int compsec_inode_setsecurity(struct inode *inode, const char *name,
 				                             const void *value, size_t size, int flags)
 {
-  if (current->pid == 1) {
-    return 0; // allow init to do anything
-  }
-
   struct file_accesses *fa;
   u32 file_class;
   struct file_accesses *process_security;
   u32 process_class;
-  
+
+  if (current->pid == 1)
+    return 0; // allow init to do anything
+
   fa = (struct file_accesses*)inode->i_security;
   if (!fa) {
     if (compsec_inode_alloc_security(inode))
@@ -531,21 +527,19 @@ static void compsec_inode_getsecid(const struct inode *inode, u32 *secid)
 static int compsec_file_permission(struct file *file, int mask)
 {
   struct inode *inode;
-  char* filename;
+  const char* filename;
   char process_name[sizeof(current->comm)];
-	struct file_accesses *file_security;
+  struct file_accesses *file_security;
   struct file_accesses *process_security;
   u32 file_class;
   u32 process_class;
 
   inode = file->f_path.dentry->d_inode;
-  if (inode->i_rdev) {
+  if (inode->i_rdev)
     return 0; // we are not enforcing on char/block devices
-  }
 
-  if (current->pid == 1) {
+  if (current->pid == 1)
     return 0; // allow init to do anything
-  }
 
   process_security = (struct file_accesses *)current_cred()->security;
   if (!process_security)
@@ -557,30 +551,26 @@ static int compsec_file_permission(struct file *file, int mask)
   file_security = (struct file_accesses *) inode->i_security;
   if (!file_security) {
     file_class = COPMSEC_CLASS_UNCLASSIFIED;
-  }
-  else {
+  } else {
     file_class = file_security->class;
   }
 
   filename = file->f_path.dentry->d_name.name;
 
   if (mask == MAY_READ) {
-		if (file_class <= process_class) {
+    if (file_class <= process_class) {
 			return 0;
-    }
-    else {
+    } else {
 	    print_bad_access(process_name, process_class, filename, file_class);
 	    return 1;
     }
-  }
-  else if (mask == MAY_WRITE) {
-	  if (file_class >= process_class) {
-		  return 0;
-    }
-    else {
+  } else if (mask == MAY_WRITE) {
+       if (file_class >= process_class) {
+	  return 0;
+       } else {
 	    print_bad_access(process_name, process_class, filename, file_class);
 	    return 1;
-    }
+       }
   }
 
   return 0;
@@ -673,7 +663,8 @@ static void compsec_cred_free(struct cred *cred)
 /*
  * prepare a new set of credentials for modification
  */
-static int compsec_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
+static int compsec_cred_prepare(struct cred *new, const struct cred *old,
+				gfp_t gfp)
 {
   const struct file_accesses *old_fi;
 	struct file_accesses *fi;
