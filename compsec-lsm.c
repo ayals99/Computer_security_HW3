@@ -664,20 +664,23 @@ static void compsec_cred_free(struct cred *cred)
  * prepare a new set of credentials for modification
  */
 static int compsec_cred_prepare(struct cred *new, const struct cred *old,
-        gfp_t gfp)
+                                gfp_t gfp)
 {
   const struct file_accesses *old_fi;
   struct file_accesses *fi;
 
   old_fi = old->security;
 
+  if (!olf_fi)
+    return 1;
+
   fi = kmemdup(old_fi, sizeof(struct file_accesses), gfp);
   if (!fi)
     return -ENOMEM;
 
-    new->security = fi;
+  new->security = fi;
   
-    return 0;
+  return 0;
 }
 
 /*
@@ -767,7 +770,7 @@ static int compsec_task_movememory(struct task_struct *p)
 }
 
 static int compsec_task_kill(struct task_struct *p, struct siginfo *info,
-           int sig, u32 secid)
+                             int sig, u32 secid)
 {
   return 0;
 }
@@ -778,7 +781,7 @@ static int compsec_task_wait(struct task_struct *p)
 }
 
 static void compsec_task_to_inode(struct task_struct *p,
-          struct inode *inode)
+                                  struct inode *inode)
 {
 }
 
@@ -821,13 +824,13 @@ static void compsec_task_to_inode(struct task_struct *p,
 
 
 static int compsec_socket_create(int family, int type,
-         int protocol, int kern)
+                                 int protocol, int kern)
 {
   return 0;
 }
 
 static int compsec_socket_post_create(struct socket *sock, int family,
-              int type, int protocol, int kern)
+                                      int type, int protocol, int kern)
 {
   return 0;
 }
@@ -857,13 +860,13 @@ static int compsec_socket_accept(struct socket *sock, struct socket *newsock)
 }
 
 static int compsec_socket_sendmsg(struct socket *sock, struct msghdr *msg,
-          int size)
+                                  int size)
 {
   return 0;
 }
 
 static int compsec_socket_recvmsg(struct socket *sock, struct msghdr *msg,
-          int size, int flags)
+                                  int size, int flags)
 {
   return 0;
 }
@@ -884,7 +887,7 @@ static int compsec_socket_setsockopt(struct socket *sock, int level, int optname
 }
 
 static int compsec_socket_getsockopt(struct socket *sock, int level,
-             int optname)
+                                     int optname)
 {
   return 0;
 }
@@ -894,15 +897,13 @@ static int compsec_socket_shutdown(struct socket *sock, int how)
   return 0;
 }
 
-static int compsec_socket_unix_stream_connect(struct sock *sock,
-                struct sock *other,
-                struct sock *newsk)
+static int compsec_socket_unix_stream_connect(struct sock *sock, struct sock *other,
+                                              struct sock *newsk)
 {
   return 0;
 }
 
-static int compsec_socket_unix_may_send(struct socket *sock,
-          struct socket *other)
+static int compsec_socket_unix_may_send(struct socket *sock, struct socket *other)
 {
   return 0;
 }
@@ -915,7 +916,7 @@ static int compsec_socket_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
 }
 
 static int compsec_socket_getpeersec_stream(struct socket *sock, char __user *optval,
-              int __user *optlen, unsigned len)
+                                            int __user *optlen, unsigned len)
 {
   return 0;
 }
@@ -1073,7 +1074,7 @@ static int compsec_shm_shmctl(struct shmid_kernel *shp, int cmd)
 }
 
 static int compsec_shm_shmat(struct shmid_kernel *shp,
-           char __user *shmaddr, int shmflg)
+                             char __user *shmaddr, int shmflg)
 {
   return 0;
 }
@@ -1176,9 +1177,8 @@ static void compsec_key_free(struct key *k)
 {
 }
 
-static int compsec_key_permission(key_ref_t key_ref,
-          const struct cred *cred,
-          key_perm_t perm)
+static int compsec_key_permission(key_ref_t key_ref, const struct cred *cred,
+                                  key_perm_t perm)
 {
   return 0;
 }
