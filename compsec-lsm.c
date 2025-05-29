@@ -469,7 +469,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
     if (!fa) 
       memset(buffer, 0, sizeof(u32));
     else
-      memcpy(buffer, fa->class, sizeof(u32));
+      memcpy(buffer, (void*)&fa->class, sizeof(u32));
     rc = (ssize_t)sizeof(u32);
     return rc;
   }
@@ -494,7 +494,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   if (!fa)
     memset(buffer, 0, sizeof(u32));
   else
-    memcpy(buffer, fa->class, sizeof(u32));
+    memcpy(buffer, (void*)&fa->class, sizeof(u32));
 
   rc = (ssize_t)sizeof(u32);
   return rc;
@@ -508,7 +508,6 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
   u32 new_file_class;
   struct file_accesses *process_security;
   u32 process_class;
-  int allowed;
 
   if (current->pid == 1) {
     // allow init to do anything
@@ -520,7 +519,7 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
         return -ENOMEM;
       fa = (struct file_accesses*)inode->i_security;
     }
-    fa->class = new_file_class
+    fa->class = new_file_class;
     return 0;
   }
 
@@ -716,7 +715,7 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old,
 {
   const struct file_accesses *old_fi;
 
-  new->security = kmalloc(sizeof(struct file_accesses, gfp));
+  new->security = kmalloc(sizeof(struct file_accesses), gfp);
   if (!new->security)
     return -ENOMEM;
 
