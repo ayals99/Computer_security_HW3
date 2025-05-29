@@ -201,12 +201,11 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 
   inode = bprm->file->f_path.dentry->d_inode;
   file_security = (struct file_accesses *) inode->i_security;
-  if (file_security) {
+  if (!file_security) {
     process_security->class = COPMSEC_CLASS_UNCLASSIFIED;
-    return 0;
+  } else {
+    process_security->class = file_security->class;
   }
-
-  process_security->class = file_security->class;
 
   return 0;
 }
