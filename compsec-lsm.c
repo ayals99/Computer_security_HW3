@@ -671,7 +671,7 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old,
 
   old_fi = old->security;
 
-  if (!olf_fi)
+  if (!old_fi)
     return 1;
 
   fi = kmemdup(old_fi, sizeof(struct file_accesses), gfp);
