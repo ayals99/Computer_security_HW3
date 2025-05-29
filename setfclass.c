@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <ftw.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +43,7 @@ int validate_class(char* class, unsigned int *class_int) {
 		return -1;
 	}
 
-	if (conv > MAX_CLASS)
+	if (conversion > MAX_CLASS)
 		return -1;
 	
 	*class_int = conversion;
@@ -55,13 +54,14 @@ int validate_class(char* class, unsigned int *class_int) {
 int validate_user_input(char *filename, char *class, unsigned int *class_int) {
 	return validate_filename(filename) || validate_class(class, class_int);
 }
-
+/*
 int aux_set_class(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
 	if (setxattr(fpath, COPMSEC_EA_NAME, &global_class_int, sizeof(unsigned int), 0) != 0) {
 		perror(fpath);
 	}
 	return 0;
 }
+*/
 
 int main(int argc, char *argv[]) {
 	if (argc > MAX_NUMBER_OF_ARGS || argc < MIN_NUMBER_OF_ARGS ) {
@@ -112,13 +112,13 @@ int main(int argc, char *argv[]) {
 	if (!found_path) {
 		return 1;
 	}
-
+/*
 	if (recursive_flag) {
 		global_class_int = class_int;
 		ret = nftw(file_path, aux_set_class, MAX_FD_AMOUNT, FTW_PHYS);
 		return ret;
 	}
-
+*/
 	if (setxattr(file_path, COPMSEC_EA_NAME, &class_int, sizeof(unsigned int), 0) != 0) {
 		return 1;
 	}
