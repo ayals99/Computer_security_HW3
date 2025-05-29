@@ -293,7 +293,7 @@ static int compsec_umount(struct vfsmount *mnt, int flags)
 
 static int compsec_inode_alloc_security(struct inode *inode)
 {
-  inode->i_security = kzalloc(sizeof(struct file_accesses),GFP_KERNEL);
+  inode->i_security = kzalloc(sizeof(struct file_accesses), GFP_KERNEL);
   if ( !inode->i_security ) {
     printk(KERN_DEBUG "compsec: kzalloc failed \n");
   }
@@ -467,9 +467,9 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   if (current->pid == 1) {
     // allow init to do anything
     if (!fa) 
-      **buffer = COPMSEC_CLASS_UNCLASSIFIED;
+      memset(buffer, 0, sizeof(u32));
     else
-      **buffer = fa->class;
+      memcpy(buffer, fa->class, sizeof(u32));
     rc = (ssize_t)sizeof(u32);
     return rc;
   }
@@ -491,7 +491,11 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
     return -EACCES;
   }
 
-  **buffer = file_class;
+  if (!fa)
+    memset(buffer, 0, sizeof(u32));
+  else
+    memcpy(buffer, fa->class, sizeof(u32));
+
   rc = (ssize_t)sizeof(u32);
   return rc;
 }
@@ -501,19 +505,33 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
 {
   struct file_accesses *fa;
   u32 file_class;
+  u32 new_file_class;
   struct file_accesses *process_security;
   u32 process_class;
+  int allowed;
 
-  if (current->pid == 1)
-    return 0; // allow init to do anything
+  if (current->pid == 1) {
+    // allow init to do anything
+    memcpy((void*)&new_file_class, value, sizeof(u32));
+    fa = (struct file_accesses*)inode->i_security;
+    if (!fa) {
+      // In case inode->i_security was freed
+      if (compsec_inode_alloc_security(inode))
+        return -ENOMEM;
+      fa = (struct file_accesses*)inode->i_security;
+    }
+    fa->class = new_file_class
+    return 0;
+  }
 
   fa = (struct file_accesses*)inode->i_security;
   if (!fa) {
+    // In case inode->i_security was freed
     if (compsec_inode_alloc_security(inode))
-      return -EACCES;
+      return -ENOMEM;
     fa = (struct file_accesses*)inode->i_security;
   }
-  
+
   file_class = fa->class;
   process_security = (struct file_accesses*) current_cred()->security;
 
@@ -528,7 +546,9 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
   if (!value)
     return -EACCES;
 
-  fa->class = *value;
+  memcpy((void*)&new_file_class, value, sizeof(u32));
+  fa->class = new_file_class;
+
   return 0;
 }
 
