@@ -81,7 +81,7 @@ struct file_accesses {
   u32 class;
 };
 
-static void print_bad_access(const char *process_name, u32 process_class,
+static void print_bad_access(char *process_name, u32 process_class,
 			                       char *file_name, u32 file_class)
 {
   pr_info("compsec: %s, %u, %s, %u\n", process_name, process_class, file_name, file_class); 
@@ -186,25 +186,27 @@ static int compsec_vm_enough_memory(struct mm_struct *mm, long pages)
 static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 {
   const struct file_accesses *old_fi;
-	struct file_accesses *new_fi;
-	struct inode *inode = bprm->file->f_path.dentry->d_inode;
+  struct file_accesses *new_fi;
+  struct inode *inode;
+
+  inode = bprm->file->f_path.dentry->d_inode;
 	
   if (current->pid == 1)
-  	return 0; // allow init to do anything
+    return 0; // allow init to do anything
 
-	if (bprm->cred_prepared)
-		return 0;
+  if (bprm->cred_prepared)
+    return 0;
 
-  new_fi = bprm->cred->security;
+  new_fi = (struct file_accesses *)bprm->cred->security;
   if (!new_fi)
-    return 1; 
+    return 1;
 
   if (!inode->i_security) {
     new_fi->class = COPMSEC_CLASS_UNCLASSIFIED;
     return 0;
   }
 
-	new_fi->class = inode->i_security->class;
+  new_fi->class = inode->i_security->class;
 
   return 0;
 }
@@ -494,9 +496,6 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
   struct file_accesses *process_security;
   u32 process_class;
   
-  if (!alloc)
-    return -EACCES;
-
   fa = (struct file_accesses*)inode->i_security;
   if (!fa) {
     if (compsec_inode_alloc_security(inode))
@@ -535,6 +534,7 @@ static int compsec_file_permission(struct file *file, int mask)
   char* filename;
   char process_name[sizeof(current->comm)];
 	struct file_accesses *file_security;
+  struct file_accesses *process_security;
   u32 file_class;
   u32 process_class;
 
@@ -673,8 +673,7 @@ static void compsec_cred_free(struct cred *cred)
 /*
  * prepare a new set of credentials for modification
  */
-static int compsec_cred_prepare(struct cred *new, const struct cred *old,
-				gfp_t gfp)
+static int compsec_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
 {
   const struct file_accesses *old_fi;
 	struct file_accesses *fi;
