@@ -71,7 +71,7 @@
 #include <linux/export.h>
 
 
-// #ifdef CONFIG_SECURITY_COMPSEC 
+#ifdef CONFIG_SECURITY_COMPSEC 
 
 #define COPMSEC_CLASS_UNCLASSIFIED 0
 #define COMPSEC_EA_NAME "security.compsec"
@@ -201,7 +201,7 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 
   new_exec_file_accesses = bprm->cred->security;
 
-	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &class, sizeof(unsigned int));
+	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(unsigned int));
 	if (len) {
 	    file_class = COPMSEC_CLASS_UNCLASSIFIED;
   }
@@ -290,7 +290,6 @@ static int compsec_inode_alloc_security(struct inode *inode)
 
 static void compsec_inode_free_security(struct inode *inode)
 {
-  return 0;
 }
 
 static int compsec_inode_init_security(struct inode *inode, struct inode *dir,
@@ -413,7 +412,7 @@ static int compsec_inode_getxattr(struct dentry *dentry, const char *name)
   unsigned int process_class;
   ssize_t len;
 
-  len = inode->i_op->getxattr(dentry, name, &(void*)file_class, sizeof(unsigned int));
+  len = vfs_getxattr(dentry, name, (void*)&file_class, sizeof(unsigned int));
   if (len < 0)
     return -EACCES;
 
@@ -444,7 +443,7 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
   ssize_t size;
   const char *suffix;
 
-  if (current->pid == COMPS)
+  if (current->pid == COPMSEC_INIT_PID)
     return 0; // allow init to do anything
 
   if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
@@ -485,7 +484,6 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   struct dentry *dentry_from_inode;
 	ssize_t len;
   int ret;
-	void *xattr_value;
   unsigned int file_class;
 
   if (!alloc) {
@@ -494,8 +492,8 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 
   *buffer = kzalloc(sizeof(unsigned int), GFP_ATOMIC);
   if (!*buffer) {
-    rc = -ENOMEM;
-    return rc;
+    ret = -ENOMEM;
+    return ret;
   }
 
 	dentry_from_inode = d_find_alias((struct inode *)inode);  
@@ -536,7 +534,7 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
     process_class = process_security->class;
   }
   
-  if (process_class <= file_class || current->pid == COPMSEC_INIT_PID)  {
+  if (process_class <= current_file_class || current->pid == COPMSEC_INIT_PID)  {
     ret = vfs_setxattr(dentry_from_inode, name, value, size, flags);
     if (ret)
       return ret;
@@ -568,7 +566,6 @@ static int compsec_file_permission(struct file *file, int mask)
   int len;
   struct dentry *file_dentry;
   
-  file->f_path.dentry
   inode = file->f_path.dentry->d_inode;
   if (inode->i_rdev)
     return 0; // we are not enforcing on char/block devices
@@ -1248,7 +1245,6 @@ static struct security_operations compsec_ops = {
   .netlink_recv =             compsec_netlink_recv,
 
   .bprm_set_creds =           compsec_bprm_set_creds,
-  .bprm_check_security =      compsec_bprm_check_security,
   .bprm_committing_creds =    compsec_bprm_committing_creds,
   .bprm_committed_creds =     compsec_bprm_committed_creds,
   .bprm_secureexec =          compsec_bprm_secureexec,
