@@ -1420,7 +1420,7 @@ static __init int compsec_init(void)
   if (register_security(&compsec_ops))
     panic("compsec: Unable to register compsec with kernel.\n");
     
-  fa = kzalloc(sizeof(struct file_class*), GFP_ATOMIC); 
+  fa = kzalloc(sizeof(struct file_class), GFP_ATOMIC); 
   if (!fa)
     return -ENOMEM;
 
