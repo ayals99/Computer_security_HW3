@@ -708,7 +708,7 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old,
   old_security_struct = old->security;
 
   new_security_struct = kzalloc(sizeof(struct file_accesses), gfp);
-  if (new_security_struct)
+  if (!new_security_struct)
     return -ENOMEM;
 
   if (!old_security_struct) {
