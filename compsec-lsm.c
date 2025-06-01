@@ -217,7 +217,6 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
 
   *new_exec_security = file_class;
-  pr_info("%s assigned class %u to process\n", __func__, file_class);
 
 	return 0;
 }
@@ -424,8 +423,6 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   if (process_class > file_class)
     return -EACCES;
 
-  vfs_setxattr(dentry, name, value, size, flags);
-
   return 0;
 }
 
@@ -484,7 +481,7 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
 
   inode = dentry->d_inode;
   value = NULL;
-  size = xattr_getsecurity(inode, suffix, NULL, 0);
+  size = vfs_getxattr(inode, name, NULL, 0);
   if (size < 0)
     return -EACCES;
 
@@ -492,7 +489,7 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
   if (!value)
     return -ENOMEM;
 
-  size = xattr_getsecurity(inode, suffix, value, size);
+  size = vfs_getxattr(inode, name, value, size);
   if (size < sizeof(unsigned int))
     return -EACCES;
 
@@ -797,7 +794,6 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old, gfp_t 
    *new_cred_class = *old_cred_class; 
   }
   new->security = (void*)new_cred_class;
-  pr_info("%s assigned class %u to process\n", __func__, *new_cred_class);
 
   return 0;
 }
