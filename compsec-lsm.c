@@ -608,8 +608,6 @@ static int compsec_file_permission(struct file *file, int mask)
   unsigned int process_class;
   char process_name[sizeof(current->comm)];
   unsigned int *process_security;
-  
-  return 0;
 
   if (current->pid == COMPSEC_INIT_PID || current->tgid == COMPSEC_INIT_PID)
       return 0; // allow init to do anything
