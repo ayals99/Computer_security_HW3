@@ -84,9 +84,10 @@ struct file_accesses {
 };
 
 static void print_bad_access(const char *process_name, unsigned int process_class,
-           const char *file_name, unsigned int file_class)
+           ,const char *access_type, const char *file_name, unsigned int file_class)
 {
-  pr_info("compsec: %s, %u, %s, %u\n", process_name, process_class, file_name, file_class); 
+  pr_info("compsec: Denied process %s, %s class %u, %s access to %s, class %u\n",
+          process_name, process_class, access_type, file_name, file_class); 
 }
 
 static int compsec_set_mnt_opts(struct super_block *sb,
@@ -217,7 +218,8 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   }
 
   *new_exec_security = file_class;
-
+  pr_info("%s assigned class %u to process\n", __func__, *new_cred_class);
+  
 	return 0;
 }
 
@@ -229,7 +231,6 @@ static int compsec_bprm_check_security(struct linux_binprm *bprm)
   }
   return 0;
 }
-
 
 static int compsec_bprm_secureexec(struct linux_binprm *bprm)
 {
@@ -660,7 +661,7 @@ static int compsec_file_permission(struct file *file, int mask)
     if (process_class <= file_class) {
       return 0;
     } else {
-      print_bad_access(process_name, process_class, filename, file_class);
+      print_bad_access(process_name, process_class, filename, file_class, "write");
       return -EACCES;
     }
   }
@@ -669,7 +670,7 @@ static int compsec_file_permission(struct file *file, int mask)
     if (process_class >= file_class) {
       return 0;
     } else {
-      print_bad_access(process_name, process_class, filename, file_class);
+      print_bad_access(process_name, process_class, filename, file_class, "read");
       return -EACCES;
     }
   }
@@ -797,6 +798,7 @@ static int compsec_cred_prepare(struct cred *new, const struct cred *old, gfp_t 
    *new_cred_class = *old_cred_class; 
   }
   new->security = (void*)new_cred_class;
+  pr_info("%s assigned class %u to process\n", __func__, *new_cred_class);
 
   return 0;
 }
