@@ -635,10 +635,7 @@ static int compsec_file_permission(struct file *file, int mask)
   get_task_comm(process_name, current);
   process_class = *process_security;
 
-  if (inode->i_op->getxattr)
-    return -EACCES;
-
-  len = inode->i_op->getxattr(file_dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
+  len = vfs_getxattr(file_dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
 
   if (len != sizeof(file_class))
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
