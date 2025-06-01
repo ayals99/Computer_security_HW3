@@ -551,7 +551,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   // // TODO: Remove before submitting
   filename = dentry_from_inode->d_name.name;
   
-  if (*filename == 'a') {
+  if (*filename == 'a' && (filename + 1 == '\n')) {
     pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
     pr_info("In function %s, filename %s", __func__, filename);
   }

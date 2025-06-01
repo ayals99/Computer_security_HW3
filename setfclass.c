@@ -70,7 +70,6 @@ int aux_set_class(const char *fpath, const struct stat *sb, int typeflag, struct
 	return 0;
 }
 
-
 int main(int argc, char *argv[]) {
 	if (argc > MAX_NUMBER_OF_ARGS || argc < MIN_NUMBER_OF_ARGS ) {
 		print_usage(argv[0]);
