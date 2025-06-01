@@ -9,8 +9,9 @@
 #include <limits.h>
 #include <unistd.h>
 
+#define COPMSEC_EA_NAME "security.compsec"
+
 static const int NUMBER_OF_ARGS = 2;
-static const char COPMSEC_EA_NAME[] = "security.compsec";
 static const unsigned int MAX_CLASS = 3;
 
 void print_usage(const char* program_name) {
