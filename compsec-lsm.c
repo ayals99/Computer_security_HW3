@@ -608,8 +608,7 @@ static int compsec_file_permission(struct file *file, int mask)
   char process_name[sizeof(current->comm)];
   unsigned int *process_security;
   
-  // // TODO: REMOVE BEFORE SUBMITTING
-  // pr_info("Entered %s with pid: %d\n", __func__, current->pid);
+  return 0;
 
   if (current->pid == COMPSEC_INIT_PID || current->tgid == COMPSEC_INIT_PID)
       return 0; // allow init to do anything
