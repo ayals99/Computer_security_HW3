@@ -73,7 +73,8 @@
 
 #ifdef CONFIG_SECURITY_COMPSEC 
 
-#define COMPSEC_CLASS_UNCLASSIFIED 0
+#define COMPSEC_CLASS_UNCLASSIFIED 0U
+#define COMPSEC_CLASS_TOP_SECRET 3U
 #define COMPSEC_EA_NAME "security.compsec"
 #define COMPSEC_INIT_PID 1
 extern struct security_operations *security_ops;
@@ -625,7 +626,7 @@ static int compsec_file_permission(struct file *file, int mask)
       return -EINVAL;
 
   if (inode->i_rdev || !S_ISREG(inode->i_mode))
-    return 0; // we are not enforcing on char/block devices
+    return 0; // we are not enforcing on char/block devices or non regular files
 
   filename = file_dentry->d_name.name;
 
@@ -636,21 +637,38 @@ static int compsec_file_permission(struct file *file, int mask)
   get_task_comm(process_name, current);
   process_class = *process_security;
 
-  len = vfs_getxattr(file_dentry, COMPSEC_EA_NAME, (void*)&file_class,
-                     sizeof(unsigned int));
+  len = vfs_getxattr(file_dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
 
-	if (len <= sizeof(unsigned int))
+  if (len != sizeof(file_class))
+    file_class = COMPSEC_CLASS_UNCLASSIFIED;
+  
+  if (file_class > COMPSEC_CLASS_TOP_SECRET)
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
 
-  if (mask == MAY_READ) {
-    if (file_class <= process_class) {
+	if (len < sizeof(unsigned int))
+    file_class = COMPSEC_CLASS_UNCLASSIFIED;
+
+  /*
+  * Reminder:
+  * #define MAY_EXEC		  0x00000001
+  * #define MAY_WRITE		  0x00000002
+  * #define MAY_READ		  0x00000004
+  * #define MAY_APPEND		0x00000008
+  * #define MAY_ACCESS		0x00000010
+  * #define MAY_OPEN		  0x00000020
+  * #define MAY_CHDIR		  0x00000040
+  */
+   if ((mask & MAY_WRITE) || (mask & MAY_APPEND)) {
+    if (process_class <= file_class) {
       return 0;
     } else {
       print_bad_access(process_name, process_class, filename, file_class);
       return -EACCES;
     }
-  } else if (mask == MAY_WRITE) {
-    if (file_class >= process_class) {
+  }
+
+  if (mask & MAY_READ) {
+    if (process_class >= file_class) {
       return 0;
     } else {
       print_bad_access(process_name, process_class, filename, file_class);
