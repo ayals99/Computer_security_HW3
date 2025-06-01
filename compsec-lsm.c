@@ -550,6 +550,8 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   }
  
   len = inode->i_op->getxattr(dentry_from_inode, name, (void*)file_class, sizeof(unsigned int));
+  // TODO: Remove before submitting
+  pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
 	if (len < sizeof(unsigned int)) {
     *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
@@ -566,7 +568,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   get_task_comm(process_name, current);
   process_class = *process_security;
 
-  if (process_class < (*file_class)) {
+  if (process_class < s(*file_clas)) {
     print_bad_access(process_name, process_class, "read", filename, *file_class);
     kfree(file_class);
     return -EACCES;
