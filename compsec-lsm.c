@@ -551,14 +551,17 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 
   len = inode->i_op->getxattr(dentry_from_inode, name, (void*)file_class, sizeof(unsigned int));
 
-  // TODO: Remove before submitting
-  pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
+  // // TODO: Remove before submitting
+  filename = dentry_from_inode->d_name.name;
+  if (*filename == "a") {
+    pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
+  }
 
 	if (len < sizeof(unsigned int)) {
     *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
-  filename = dentry_from_inode->d_name.name;
+  
   dput(dentry_from_inode);
 
   process_security = (unsigned int *)current_cred()->security;
