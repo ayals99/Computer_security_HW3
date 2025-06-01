@@ -213,10 +213,8 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   if (!new_exec_security)
     return -EACCES;
 
+  file_class = COMPSEC_CLASS_UNCLASSIFIED;
 	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
-	if (len < sizeof(file_class)) {
-	  file_class = COMPSEC_CLASS_UNCLASSIFIED;
-  }
 
   *new_exec_security = file_class;
   pr_info("%s assigned class %u to process\n", __func__, file_class);
