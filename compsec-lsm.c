@@ -603,7 +603,7 @@ static int compsec_file_permission(struct file *file, int mask)
   unsigned int *process_security;
   
   // TODO: REMOVE BEFORE SUBMITTING
-  pr_info("Entered %s with pid: %d\n", __func__);
+  pr_info("Entered %s with pid: %d\n", __func__, current->pid);
 
   if (current->pid == COPMSEC_INIT_PID || current->tgid == COPMSEC_INIT_PID)
       return 0; // allow init to do anything
