@@ -514,29 +514,29 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
                                      bool alloc)
 {
   struct dentry *dentry_from_inode;
-  unsigned int file_class;
+  void *file_class;
 	ssize_t len;
   
   if (!alloc) {
 		return 0;
 	}
 
-  *buffer = kzalloc(sizeof(unsigned int), GFP_KERNEL);
-  if (!*buffer)
+  file_class = kzalloc(sizeof(unsigned int), GFP_KERNEL);
+  if (!file_class)
     return -ENOMEM;
 
 	dentry_from_inode = d_find_alias((struct inode *)inode);  
   if (!dentry_from_inode) {
-    kfree (*buffer);
+    kfree (file_class);
     return -EINVAL;
   }
 
-	len = vfs_getxattr(dentry_from_inode, name, (void*)&file_class, sizeof(unsigned int));
+	len = vfs_getxattr(dentry_from_inode, name, file_class, sizeof(unsigned int));
 	if (len < sizeof(unsigned int)) {
-    kfree (*buffer);
+    kfree (file_class);
+    dput(dentry_from_inode);
     return len;
   }
-		
 
   *buffer = file_class;
   dput(dentry_from_inode);
