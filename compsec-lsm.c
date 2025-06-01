@@ -538,7 +538,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 	dentry_from_inode = d_find_alias((struct inode *)inode);  
   if (!dentry_from_inode){
     kfree(file_class);
-    return -EINVAL;
+    return -EACCES;
   }
 
   if (!inode->i_op->getxattr){
@@ -550,17 +550,17 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 
   // // TODO: Remove before submitting
   filename = dentry_from_inode->d_name.name;
-  pr_info("In function %s, filename %s", __func__, filename);
   
-  if (*file_class == 4) {
+  if (*filename == 'a') {
     pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
+    pr_info("In function %s, filename %s", __func__, filename);
   }
 
 	if (len < sizeof(unsigned int)) {
     *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
-  
+
   dput(dentry_from_inode);
 
   process_security = (unsigned int *)current_cred()->security;
@@ -1492,12 +1492,6 @@ static struct security_operations compsec_ops = {
 
 static __init int compsec_init(void)
 {
-  // struct cred *cred;
-	// struct unsigned int* initial_class;
-  
-  // // TODO: REMOVE BEFORE SUBMITTING
-  // pr_info("Entered %s with pid %d\n", __func__, current->pid);
-
   if (!security_module_enable(&compsec_ops)) {
     printk("compsec: disabled at boot.\n");
     return 0;
@@ -1505,18 +1499,6 @@ static __init int compsec_init(void)
 
   if (register_security(&compsec_ops))
     panic("compsec: Unable to register compsec with kernel.\n");
-
-  // initial_class = kzalloc(sizeof(struct file_accesses), GFP_ATOMIC); 
-  // if (!initial_class)
-  //   return -ENOMEM;
-
-  // // TODO: REMOVE BEFORE SUBMITTING
-  // pr_info("Succesfully allocated initial_class\n");
-
-  // initial_class = COMPSEC_CLASS_UNCLASSIFIED;
-
-	// cred = (struct cred *)current->cred;
-	// cred->security = initial_class;
 
   printk("compsec: registered with the kernel\n");
 
