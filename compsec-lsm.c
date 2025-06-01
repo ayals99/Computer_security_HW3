@@ -218,8 +218,8 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   }
 
   *new_exec_security = file_class;
-  pr_info("%s assigned class %u to process\n", __func__, *new_cred_class);
-  
+  pr_info("%s assigned class %u to process\n", __func__, file_class);
+
 	return 0;
 }
 
