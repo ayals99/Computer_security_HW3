@@ -62,14 +62,14 @@ int validate_class(char* class, unsigned int *class_int) {
 int validate_user_input(char *filename, char *class, unsigned int *class_int) {
 	return validate_filename(filename) || validate_class(class, class_int);
 }
-/*
+
 int aux_set_class(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
 	if (setxattr(fpath, COPMSEC_EA_NAME, &global_class_int, sizeof(unsigned int), 0) != 0) {
 		perror(fpath);
 	}
 	return 0;
 }
-*/
+
 
 int main(int argc, char *argv[]) {
 	if (argc > MAX_NUMBER_OF_ARGS || argc < MIN_NUMBER_OF_ARGS ) {
