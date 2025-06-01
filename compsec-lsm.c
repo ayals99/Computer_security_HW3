@@ -191,30 +191,19 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   int len;
   unsigned int* new_exec_security;
   // int rc;
-  
+
   if (!bprm || !bprm->file || !bprm->file->f_path.dentry || !bprm->cred) {
      return 0;
   }
-
-  // // TODO: REMOVE BEFORE SUBMITTING
-  // pr_info("Entered %s with pid %d\n", __func__);
-
-  /*
-	 * Do only if this function is called for the first time of an execve operation.
-	 */
-  // if (bprm->cred_prepared)
-  //   return 0;
-
-  // rc = cap_bprm_set_creds(bprm);
-  // if (rc)
-	//   return rc;
 
   new_exec_security = (unsigned int *)bprm->cred->security;
   if (!new_exec_security)
     return -EACCES;
 
-  file_class = COMPSEC_CLASS_UNCLASSIFIED;
-	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
+  
+	len = inode->i_op->getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
+  if (len < 0)
+    file_class = COMPSEC_CLASS_UNCLASSIFIED;
 
   *new_exec_security = file_class;
 
