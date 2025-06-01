@@ -481,7 +481,7 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
 
   inode = dentry->d_inode;
   value = NULL;
-  size = vfs_getxattr(inode, name, NULL, 0);
+  size = xattr_getsecurity(inode, name, NULL, 0);
   if (size < 0)
     return -EACCES;
 
@@ -489,7 +489,7 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
   if (!value)
     return -ENOMEM;
 
-  size = vfs_getxattr(inode, name, value, size);
+  size = xattr_getsecurity(inode, name, value, size);
   if (size < sizeof(unsigned int))
     return -EACCES;
 
