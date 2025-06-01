@@ -75,7 +75,7 @@
 
 #define COMPSEC_CLASS_UNCLASSIFIED 0
 #define COMPSEC_EA_NAME "security.compsec"
-#define COPMSEC_INIT_PID 1
+#define COMPSEC_INIT_PID 1
 extern struct security_operations *security_ops;
 
 struct file_accesses {
@@ -186,24 +186,28 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 {
 	unsigned int file_class;
   int len;
-  unsigned int* new_exec_file_accesses;
+  unsigned int* new_exec_security;
   int rc;
   
-  // TODO: REMOVE BEFORE SUBMITTING
-  pr_info("Entered %s with pid %d\n", __func__, current->pid);
+  if (!bprm || !bprm->file || !bprm->file->f_path.dentry || !bprm->cred) {
+     return 0;
+  }
+
+  // // TODO: REMOVE BEFORE SUBMITTING
+  // pr_info("Entered %s with pid %d\n", __func__);
 
   /*
 	 * Do only if this function is called for the first time of an execve operation.
 	 */
-  if (bprm->cred_prepared)
-    return 0;
+  // if (bprm->cred_prepared)
+  //   return 0;
 
-  rc = cap_bprm_set_creds(bprm);
-  if (rc)
-	  return rc;
+  // rc = cap_bprm_set_creds(bprm);
+  // if (rc)
+	//   return rc;
 
-  new_exec_file_accesses = (unsigned int *)bprm->cred->security;
-  if (!new_exec_file_accesses)
+  new_exec_security = (unsigned int *)bprm->cred->security;
+  if (!new_exec_security)
     return -EACCES;
 
 	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
@@ -211,7 +215,7 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 	  file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
-  *new_exec_file_accesses = file_class;
+  *new_exec_security = file_class;
 
 	return 0;
 }
@@ -391,7 +395,7 @@ static int compsec_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
 static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
                                   const void *value, size_t size, int flags)
 {
-  struct file_accesses *process_security;
+  unsigned int *process_security;
   unsigned int process_class;
   ssize_t len;
   void *file_class_memory;
@@ -410,14 +414,16 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
 
   kfree(file_class_memory);
 
-  process_security = (struct file_accesses *)current_cred()->security;
+  process_security = (unsigned int *)current_cred()->security;
   if (!process_security)
     return -ENOMEM;
 
-  process_class = process_security->class;
+  process_class = *process_security;
 
   if (process_class > file_class)
     return -EACCES;
+
+  vfs_setxattr(dentry, name, value, size, flags);
 
   return 0;
 }
@@ -466,7 +472,7 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
   ssize_t size;
   const char *suffix;
 
-  if (current->pid == COPMSEC_INIT_PID)
+  if (current->pid == COMPSEC_INIT_PID)
     return 0; // allow init to do anything
 
   if (strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
@@ -569,7 +575,7 @@ static int compsec_inode_setsecurity(struct inode *inode, const char *name,
   //   process_class = process_security->class;
   // }
   
-  // if (process_class <= current_file_class || current->pid == COPMSEC_INIT_PID)  {
+  // if (process_class <= current_file_class || current->pid == COMPSEC_INIT_PID)  {
   //   ret = vfs_setxattr(dentry_from_inode, name, value, size, flags);
   //   if (ret)
   //     return ret;
@@ -602,10 +608,10 @@ static int compsec_file_permission(struct file *file, int mask)
   char process_name[sizeof(current->comm)];
   unsigned int *process_security;
   
-  // TODO: REMOVE BEFORE SUBMITTING
-  pr_info("Entered %s with pid: %d\n", __func__, current->pid);
+  // // TODO: REMOVE BEFORE SUBMITTING
+  // pr_info("Entered %s with pid: %d\n", __func__, current->pid);
 
-  if (current->pid == COPMSEC_INIT_PID || current->tgid == COPMSEC_INIT_PID)
+  if (current->pid == COMPSEC_INIT_PID || current->tgid == COMPSEC_INIT_PID)
       return 0; // allow init to do anything
 
   if (!file)
@@ -1472,8 +1478,8 @@ static __init int compsec_init(void)
   // struct cred *cred;
 	// struct unsigned int* initial_class;
   
-  // TODO: REMOVE BEFORE SUBMITTING
-  pr_info("Entered %s with pid %d\n", __func__, current->pid);
+  // // TODO: REMOVE BEFORE SUBMITTING
+  // pr_info("Entered %s with pid %d\n", __func__, current->pid);
 
   if (!security_module_enable(&compsec_ops)) {
     printk("compsec: disabled at boot.\n");
