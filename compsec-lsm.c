@@ -408,9 +408,6 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
     return -EACCES;
   
   len = inode->i_op->getxattr(dentry, name, (void*)&file_class, sizeof(file_class));
-  
-  // TODO: Remove before submitting
-  pr_info("In %s, len is %d and class is %u\n", __func__, len, file_class);
 
   if (len < size) {
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
@@ -525,7 +522,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 {
   struct dentry *dentry_from_inode;
   unsigned int *file_class;
-  const char * filename;
+  const char *filename;
 	ssize_t len;
   unsigned int process_class;
   char process_name[sizeof(current->comm)];
@@ -553,7 +550,9 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 
   // // TODO: Remove before submitting
   filename = dentry_from_inode->d_name.name;
-  if (*filename == "a") {
+  pr_info("In function %s, filename %s", __func__, filename);
+  
+  if (*file_class == 4) {
     pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
   }
 
