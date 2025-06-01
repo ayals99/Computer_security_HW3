@@ -73,7 +73,7 @@
 
 #ifdef CONFIG_SECURITY_COMPSEC 
 
-#define COPMSEC_CLASS_UNCLASSIFIED 0
+#define COMPSEC_CLASS_UNCLASSIFIED 0
 #define COMPSEC_EA_NAME "security.compsec"
 #define COPMSEC_INIT_PID 1
 extern struct security_operations *security_ops;
@@ -184,11 +184,14 @@ static int compsec_vm_enough_memory(struct mm_struct *mm, long pages)
 
 static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 {
-	struct file_accesses* new_exec_file_accesses;
-  unsigned int file_class;
-  int rc;
+	unsigned int file_class;
   int len;
+  unsigned int* new_exec_file_accesses;
+  int rc;
   
+  // TODO: REMOVE BEFORE SUBMITTING
+  pr_info("Entered %s with pid %d\n", __func__, current->pid);
+
   /*
 	 * Do only if this function is called for the first time of an execve operation.
 	 */
@@ -199,17 +202,29 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   if (rc)
 	  return rc;
 
-  new_exec_file_accesses = bprm->cred->security;
+  new_exec_file_accesses = (unsigned int *)bprm->cred->security;
+  if (!new_exec_file_accesses)
+    return -EACCES;
 
-	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(unsigned int));
-	if (len) {
-	    file_class = COPMSEC_CLASS_UNCLASSIFIED;
+	len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
+	if (len < sizeof(file_class)) {
+	  file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
-  new_exec_file_accesses->class = file_class;
+  *new_exec_file_accesses = file_class;
 
 	return 0;
 }
+
+static int compsec_bprm_check_security(struct linux_binprm *bprm)
+{
+  if (bprm->file->f_dentry->d_inode->i_ino == (unsigned long) 280615) {
+    printk ("compsec: can't exec this file\n");
+    return (-EACCES);
+  }
+  return 0;
+}
+
 
 static int compsec_bprm_secureexec(struct linux_binprm *bprm)
 {
@@ -285,12 +300,20 @@ static int compsec_umount(struct vfsmount *mnt, int flags)
 
 static int compsec_inode_alloc_security(struct inode *inode)
 {
- return 0;
+  inode->i_security = kzalloc(sizeof(struct file_accesses),GFP_KERNEL);
+  if ( !inode->i_security ) {
+    printk(KERN_DEBUG "compsec: kzalloc failed \n");
+  }
+  return !inode->i_security;
 }
 
 static void compsec_inode_free_security(struct inode *inode)
 {
-}
+  if (!inode->i_security) {
+    kfree(inode->i_security);
+    inode->i_security = NULL;
+  }
+} 
 
 static int compsec_inode_init_security(struct inode *inode, struct inode *dir,
                                        const struct qstr *qstr, char **name,
@@ -379,11 +402,13 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
     return -ENOMEM;
 
   len = vfs_getxattr(dentry, name, file_class_memory, size);
-  if (len < 0) {
-    file_class = COPMSEC_CLASS_UNCLASSIFIED;
+  if (len < size) {
+    file_class = COMPSEC_CLASS_UNCLASSIFIED;
   } else {
     file_class = *(unsigned int *)file_class_memory;
   }
+
+  kfree(file_class_memory)
 
   process_security = (struct file_accesses *)current_cred()->security;
   if (!process_security)
@@ -393,8 +418,6 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
 
   if (process_class > file_class)
     return -EACCES;
-
-  kfree(file_class_memory);
 
   return 0;
 }
@@ -407,25 +430,25 @@ static void compsec_inode_post_setxattr(struct dentry *dentry, const char *name,
 
 static int compsec_inode_getxattr(struct dentry *dentry, const char *name)
 {
-  struct file_accesses *process_security;
-  unsigned int file_class;
-  unsigned int process_class;
-  ssize_t len;
+  // struct file_accesses *process_security;
+  // unsigned int file_class;
+  // unsigned int process_class;
+  // ssize_t len;
 
-  len = vfs_getxattr(dentry, name, (void*)&file_class, sizeof(unsigned int));
-  if (len < 0)
-    return -EACCES;
+  // len = vfs_getxattr(dentry, name, (void*)&file_class, sizeof(unsigned int));
+  // if (len < 0)
+  //   return -EACCES;
 
-  process_security = (struct file_accesses *)current_cred()->security;
-  if (!process_security)
-    return -EACCES;
+  // process_security = (struct file_accesses *)current_cred()->security;
+  // if (!process_security)
+  //   return -EACCES;
 
-  process_class = process_security->class;
+  // process_class = process_security->class;
 
-  if (process_class > file_class)
-    return -EACCES;
+  // if (process_class > file_class)
+  //   return -EACCES;
   
-  return 0;
+  // return 0;
 }
 
 static int compsec_inode_listxattr(struct dentry *dentry)
@@ -436,7 +459,7 @@ static int compsec_inode_listxattr(struct dentry *dentry)
 static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
 {
   struct inode *inode;
-  struct file_accesses *process_security;
+  unsigned int *process_security;
   unsigned int file_class;
   unsigned int process_class;
   void *value;
@@ -446,30 +469,39 @@ static int compsec_inode_removexattr(struct dentry *dentry, const char *name)
   if (current->pid == COPMSEC_INIT_PID)
     return 0; // allow init to do anything
 
-  if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
-		suffix = name + XATTR_SECURITY_PREFIX_LEN;
-    inode = dentry->d_inode;
-
-    size = xattr_getsecurity(inode, suffix, value, 0);
-    if (size < 0)
-      return -EACCES;
-
-    value = kzalloc(sizeof(unsigned int), GFP_KERNEL);
-    if (!value)
-      return -ENOMEM;
-
-    size = xattr_getsecurity(inode, suffix, value, size);
-    file_class = *(unsigned int *)value;
-
-    process_security = (struct file_accesses *)current_cred()->security;
-    if (!process_security)
-      return -EACCES;
-
-    process_class = process_security->class;
-
-    if (process_class > file_class)
-      return -EACCES;
+  if (strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
+		suffix = name + XATTR_SECURITY_PREFIX_LEN;  
+  } else {
+    suffix = name;
   }
+
+  inode = dentry->d_inode;
+  value = NULL;
+  size = xattr_getsecurity(inode, suffix, NULL, 0);
+  if (size < 0)
+    return -EACCES;
+
+  value = kzalloc(sizeof(unsigned int), GFP_KERNEL);
+  if (!value)
+    return -ENOMEM;
+
+  size = xattr_getsecurity(inode, suffix, value, size);
+  if (size < sizeof(unsigned int))
+    return -EACCES;
+
+  file_class = *(unsigned int *)value;
+  kfree(value);
+  
+  process_security = (unsigned int*)current_cred()->security;
+  if (!process_security) {
+    return -EACCES;
+  }
+
+  process_class = *process_security;
+
+  if (process_class > file_class)
+    return -EACCES;
+
   return 0;
 }
 
@@ -482,66 +514,71 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
                                      bool alloc)
 {
   struct dentry *dentry_from_inode;
+  unsigned int file_class;
 	ssize_t len;
   int ret;
-  unsigned int file_class;
-
+  
   if (!alloc) {
-		return -EACCES;
+		return 0;
 	}
 
-  *buffer = kzalloc(sizeof(unsigned int), GFP_ATOMIC);
-  if (!*buffer) {
-    ret = -ENOMEM;
-    return ret;
-  }
+  *buffer = kzalloc(sizeof(unsigned int), GFP_KERNEL);
+  if (!*buffer)
+    return -ENOMEM;
 
 	dentry_from_inode = d_find_alias((struct inode *)inode);  
-  if (!dentry_from_inode)
-		return -EINVAL;
+  if (!dentry_from_inode) {
+    kfree (*buffer);
+    return -EINVAL;
+  }
 
 	len = vfs_getxattr(dentry_from_inode, name, (void*)&file_class, sizeof(unsigned int));
-	if (len < 0) {
-		file_class = COPMSEC_CLASS_UNCLASSIFIED;
-	}
+	if (len < sizeof(unsigned int)) {
+    kfree (*buffer);
+    return len;
+  }
+		
 
-  memcpy(*buffer, &file_class, sizeof(unsigned int));
-  return 0;
+  *buffer = file_class
+  dput(dentry_from_inode);
+
+  return len;
 }
 
 static int compsec_inode_setsecurity(struct inode *inode, const char *name,
                                      const void *value, size_t size, int flags)
 {
-  struct file_accesses *process_security;
-  unsigned int process_class;
-  struct dentry *dentry_from_inode;
-  int ret;
-  ssize_t len;
+  // struct file_accesses *process_security;
+  // unsigned int process_class;
+  // struct dentry *dentry_from_inode;
+  // int ret;
+  // ssize_t len;
 
-  unsigned int current_file_class;
+  // unsigned int current_file_class;
 
-  dentry_from_inode = d_find_alias(inode);
-  len = vfs_getxattr(dentry_from_inode, COMPSEC_EA_NAME, (void*)&current_file_class,
-                     sizeof(unsigned int));
-  if (len < 0) {
-    current_file_class = COPMSEC_CLASS_UNCLASSIFIED;
-  }
+  // dentry_from_inode = d_find_alias(inode);
+  // len = vfs_getxattr(dentry_from_inode, COMPSEC_EA_NAME, (void*)&current_file_class,
+  //                    sizeof(unsigned int));
+  // if (len < 0) {
+  //   current_file_class = COMPSEC_CLASS_UNCLASSIFIED;
+  // }
 
-  process_security = (struct file_accesses*) current_cred()->security;
-  if (!process_security) {
-    process_class = COPMSEC_CLASS_UNCLASSIFIED;
-  } else {
-    process_class = process_security->class;
-  }
+  // process_security = (struct file_accesses*) current_cred()->security;
+  // if (!process_security) {
+  //   process_class = COMPSEC_CLASS_UNCLASSIFIED;
+  // } else {
+  //   process_class = process_security->class;
+  // }
   
-  if (process_class <= current_file_class || current->pid == COPMSEC_INIT_PID)  {
-    ret = vfs_setxattr(dentry_from_inode, name, value, size, flags);
-    if (ret)
-      return ret;
-    return 0;
-  }
+  // if (process_class <= current_file_class || current->pid == COPMSEC_INIT_PID)  {
+  //   ret = vfs_setxattr(dentry_from_inode, name, value, size, flags);
+  //   if (ret)
+  //     return ret;
+  //   return 0;
+  // }
 
-  return -EACCES;
+  // return -EACCES;
+  return 0;
 }
 
 static int compsec_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer_size)
@@ -557,21 +594,35 @@ static void compsec_inode_getsecid(const struct inode *inode, unsigned int *seci
 
 static int compsec_file_permission(struct file *file, int mask)
 {
-  struct inode *inode;
-  const char* filename;
-  char process_name[sizeof(current->comm)];
-  struct file_accesses *process_security;
   unsigned int file_class;
-  unsigned int process_class;
-  int len;
   struct dentry *file_dentry;
+  const char* filename;
+  struct inode *inode;
+  int len;
+  unsigned int process_class;
+  char process_name[sizeof(current->comm)];
+  unsigned int *process_security;
   
-  inode = file->f_path.dentry->d_inode;
-  if (inode->i_rdev)
-    return 0; // we are not enforcing on char/block devices
+  // TODO: REMOVE BEFORE SUBMITTING
+  pr_info("Entered %s with pid: %d, filename: %s\n", __func__, current->pid,
+          file->f_path.dentry->d_name.name);
 
-  if (current->pid == COPMSEC_INIT_PID)
-    return 0; // allow init to do anything
+  if (current->pid == COPMSEC_INIT_PID || current->tgid == COPMSEC_INIT_PID)
+      return 0; // allow init to do anything
+
+  if (!file)
+      return -EINVAL;  
+
+  dentry = file->f_path.dentry;
+  if (!dentry)
+    return -EINVAL;
+
+  inode = dentry->d_inode;
+  if (!inode)
+      return -EINVAL;
+
+  if (inode->i_rdev || !S_ISREG(inode->i_mode))
+    return 0; // we are not enforcing on char/block devices
 
   filename = file->f_path.dentry->d_name.name;
 
@@ -586,8 +637,8 @@ static int compsec_file_permission(struct file *file, int mask)
   len = vfs_getxattr(file_dentry, COMPSEC_EA_NAME, (void*)&file_class,
                      sizeof(unsigned int));
 
-	if (len < 0)
-    file_class = COPMSEC_CLASS_UNCLASSIFIED;
+	if (len <= sizeof(unsigned int))
+    file_class = COMPSEC_CLASS_UNCLASSIFIED;
 
   if (mask == MAY_READ) {
     if (file_class <= process_class) {
@@ -682,6 +733,17 @@ static int compsec_task_create(unsigned long clone_flags)
  */
 static int compsec_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 {
+  unsigned int *cred_security;
+  
+  cred_security = kmalloc(sizeof(unsigned int), gfp);
+
+  if (!cred_security)
+    return -ENOMEM;
+  
+  *cred_security = COMPSEC_CLASS_UNCLASSIFIED;
+
+  cred->security = cred_security;
+
   return 0;
 }
 
@@ -690,33 +752,33 @@ static int compsec_cred_alloc_blank(struct cred *cred, gfp_t gfp)
  */
 static void compsec_cred_free(struct cred *cred)
 {
-  if (cred->security)
-    kfree(cred->security);
-
+  unsigned int *cred_security;
+  cred_security = cred->security;
+  if (cred_security)
+    kfree(cred_security);
   cred->security = NULL;
 }
 
 /*
  * prepare a new set of credentials for modification
  */
-static int compsec_cred_prepare(struct cred *new, const struct cred *old,
-                                gfp_t gfp)
+static int compsec_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
 {
-  const struct file_accesses *old_security_struct;
-  struct file_accesses *new_security_struct;
+  const unsigned int *old_security_struct;
+  unsigned int *new_security_struct;
 
   old_security_struct = old->security;
 
-  new_security_struct = kzalloc(sizeof(struct file_accesses), gfp);
+  new_security_struct = kmalloc(sizeof(unsigned int), gfp);
   if (!new_security_struct)
     return -ENOMEM;
 
   if (!old_security_struct) {
-    new_security_struct->class = COPMSEC_CLASS_UNCLASSIFIED;
+    new_security_struct->class = COMPSEC_CLASS_UNCLASSIFIED;
   } else {
-   new_security_struct->class = old_security_struct->class;
-   new->security = (void*)new_security_struct;
+   *new_security_struct = *old_security_struct; 
   }
+  new->security = (void*)new_security_struct;
 
   return 0;
 }
@@ -1245,6 +1307,7 @@ static struct security_operations compsec_ops = {
   .netlink_recv =             compsec_netlink_recv,
 
   .bprm_set_creds =           compsec_bprm_set_creds,
+  .bprm_check_security = 		  compsec_bprm_check_security,
   .bprm_committing_creds =    compsec_bprm_committing_creds,
   .bprm_committed_creds =     compsec_bprm_committed_creds,
   .bprm_secureexec =          compsec_bprm_secureexec,
@@ -1411,6 +1474,9 @@ static __init int compsec_init(void)
 {
   struct cred *cred;
 	struct file_accesses* fa;
+  
+  // TODO: REMOVE BEFORE SUBMITTING
+  pr_info("Entered %s with pid %d\n", __func__, current->pid);
 
   if (!security_module_enable(&compsec_ops)) {
     printk("compsec: disabled at boot.\n");
@@ -1419,15 +1485,18 @@ static __init int compsec_init(void)
 
   if (register_security(&compsec_ops))
     panic("compsec: Unable to register compsec with kernel.\n");
-    
-  fa = kzalloc(sizeof(struct file_accesses), GFP_ATOMIC); 
-  if (!fa)
-    return -ENOMEM;
 
-  fa->class = COPMSEC_CLASS_UNCLASSIFIED;
+  // fa = kzalloc(sizeof(struct file_accesses), GFP_ATOMIC); 
+  // if (!fa)
+  //   return -ENOMEM;
 
-	cred = (struct cred *)current->cred;
-	cred->security = fa;
+  // // TODO: REMOVE BEFORE SUBMITTING
+  // pr_info("Succesfully allocated fa\n");
+
+  // fa->class = COMPSEC_CLASS_UNCLASSIFIED;
+
+	// cred = (struct cred *)current->cred;
+	// cred->security = fa;
 
   printk("compsec: registered with the kernel\n");
 
