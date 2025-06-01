@@ -202,7 +202,10 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
     return -EACCES;
 
   dentry = bprm->file->f_path.dentry;
-  inode = dentry->d_inode; 
+  inode = dentry->d_inode;
+
+  if (!inode->i_op->getxattr)
+    return -EACCES;
 	len = inode->i_op->getxattr(dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
   if (len < 0)
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
