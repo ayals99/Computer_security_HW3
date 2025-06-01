@@ -79,9 +79,9 @@
 #define COMPSEC_INIT_PID 1
 extern struct security_operations *security_ops;
 
-struct file_accesses {
-  unsigned int class;
-};
+// struct file_accesses {
+//   unsigned int class;
+// };
 
 static void print_bad_access(const char *process_name, unsigned int process_class,
                              const char *access_type, const char *file_name,
@@ -304,7 +304,7 @@ static int compsec_umount(struct vfsmount *mnt, int flags)
 
 static int compsec_inode_alloc_security(struct inode *inode)
 {
-  inode->i_security = kzalloc(sizeof(struct file_accesses),GFP_KERNEL);
+  inode->i_security = kzalloc(sizeof(unsigned int),GFP_KERNEL);
   if ( !inode->i_security ) {
     printk(KERN_DEBUG "compsec: kzalloc failed \n");
   }
@@ -400,12 +400,22 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   ssize_t len;
   void *file_class_memory;
   unsigned int file_class;
+  struct inode *inode;
 
   file_class_memory = kzalloc(size, GFP_KERNEL);
   if (!file_class_memory)
     return -ENOMEM;
 
-  len = vfs_getxattr(dentry, name, file_class_memory, size);
+  inode = dentry->d_inode;
+  if (!inode || !inode->i_op->getxattr)
+    return -EACCES;
+  
+  len = inode->i_op->getxattr(dentry, name, (void*)&file_class, sizeof(file_class));
+  // len = vfs_getxattr(dentry, name, file_class_memory, size);
+  
+  // TODO: Remove before submitting
+  pr_info("In %s, len is %u\n", __func__, len);
+
   if (len < size) {
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
   } else {
@@ -551,36 +561,6 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 static int compsec_inode_setsecurity(struct inode *inode, const char *name,
                                      const void *value, size_t size, int flags)
 {
-  // struct file_accesses *process_security;
-  // unsigned int process_class;
-  // struct dentry *dentry_from_inode;
-  // int ret;
-  // ssize_t len;
-
-  // unsigned int current_file_class;
-
-  // dentry_from_inode = d_find_alias(inode);
-  // len = vfs_getxattr(dentry_from_inode, COMPSEC_EA_NAME, (void*)&current_file_class,
-  //                    sizeof(unsigned int));
-  // if (len < 0) {
-  //   current_file_class = COMPSEC_CLASS_UNCLASSIFIED;
-  // }
-
-  // process_security = (struct file_accesses*) current_cred()->security;
-  // if (!process_security) {
-  //   process_class = COMPSEC_CLASS_UNCLASSIFIED;
-  // } else {
-  //   process_class = process_security->class;
-  // }
-  
-  // if (process_class <= current_file_class || current->pid == COMPSEC_INIT_PID)  {
-  //   ret = vfs_setxattr(dentry_from_inode, name, value, size, flags);
-  //   if (ret)
-  //     return ret;
-  //   return 0;
-  // }
-
-  // return -EACCES;
   return 0;
 }
 
