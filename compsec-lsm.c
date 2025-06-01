@@ -560,7 +560,6 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
     *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
-
   dput(dentry_from_inode);
 
   process_security = (unsigned int *)current_cred()->security;
@@ -578,9 +577,9 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
     return -EACCES;
   }
 
-  *buffer = (void*)*file_class;
+  *buffer = (void*)file_class;
 
-  return len;
+  return (int)len;
 }
 
 static int compsec_inode_setsecurity(struct inode *inode, const char *name,
@@ -1260,7 +1259,7 @@ static int compsec_secctx_to_secid(const char *secdata, unsigned int seclen, uns
   return 0;
 }
 
-static void compsec_release_secctx(char *secdata, unsigned int seclen)
+static void compsec_release_secctx(char *secdata, u32 seclen)
 {
   kfree(secdata);
 }

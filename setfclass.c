@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE 500
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 #include <sys/xattr.h>
 #include <limits.h>
 #include <unistd.h>
+#include <ftw.h>
 
 static const int MAX_FD_AMOUNT = 16;
 static const unsigned int MAX_CLASS = 3;
@@ -118,13 +120,13 @@ int main(int argc, char *argv[]) {
 	if (!found_path) {
 		return 1;
 	}
-/*
+
 	if (recursive_flag) {
 		global_class_int = class_int;
 		ret = nftw(file_path, aux_set_class, MAX_FD_AMOUNT, FTW_PHYS);
 		return ret;
 	}
-*/
+
 	if (setxattr(file_path, COPMSEC_EA_NAME, &class_int, sizeof(unsigned int), 0) != 0) {
 		return 1;
 	}
