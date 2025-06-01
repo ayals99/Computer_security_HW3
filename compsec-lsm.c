@@ -539,7 +539,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   }
 
 	len = vfs_getxattr(dentry_from_inode, name, file_class, sizeof(unsigned int));
-	if (len < sizeof(unsigned int)) {
+	if (len < 0) {
     kfree (file_class);
     dput(dentry_from_inode);
     return len;
