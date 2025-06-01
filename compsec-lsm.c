@@ -187,7 +187,7 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 	unsigned int file_class;
   int len;
   unsigned int* new_exec_security;
-  int rc;
+  // int rc;
   
   if (!bprm || !bprm->file || !bprm->file->f_path.dentry || !bprm->cred) {
      return 0;
@@ -313,7 +313,7 @@ static int compsec_inode_alloc_security(struct inode *inode)
 
 static void compsec_inode_free_security(struct inode *inode)
 {
-  if (!inode->i_security) {
+  if (inode->i_security) {
     kfree(inode->i_security);
     inode->i_security = NULL;
   }
@@ -591,7 +591,7 @@ static int compsec_inode_listsecurity(struct inode *inode, char *buffer, size_t 
   return 0;
 }
 
-static void compsec_inode_getsecid(const struct inode *inode, unsigned int *secid)
+static void compsec_inode_getsecid(const struct inode *inode, u32 *secid)
 {
 }
 
