@@ -87,7 +87,7 @@ static void print_bad_access(const char *process_name, unsigned int process_clas
                              const char *access_type, const char *file_name,
                              unsigned int file_class)
 {
-  pr_info("compsec: Denied process %s, %s class %u, %s access to %s, class %u\n",
+  pr_info("compsec: Denied process %s, class %u, %s access to %s, class %u\n",
           process_name, process_class, access_type, file_name, file_class); 
 }
 
