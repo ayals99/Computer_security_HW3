@@ -398,13 +398,13 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   unsigned int *process_security;
   unsigned int process_class;
   ssize_t len;
-  void *file_class_memory;
+  // void *file_class_memory;
   unsigned int file_class;
   struct inode *inode;
 
-  file_class_memory = kzalloc(size, GFP_KERNEL);
-  if (!file_class_memory)
-    return -ENOMEM;
+  // file_class_memory = kzalloc(size, GFP_KERNEL);
+  // if (!file_class_memory)
+  //   return -ENOMEM;
 
   inode = dentry->d_inode;
   if (!inode || !inode->i_op->getxattr)
@@ -414,15 +414,13 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   // len = vfs_getxattr(dentry, name, file_class_memory, size);
   
   // TODO: Remove before submitting
-  pr_info("In %s, len is %u\n", __func__, len);
+  pr_info("In %s, len is %d and class is %u\n", __func__, len, file_class);
 
   if (len < size) {
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
-  } else {
-    file_class = *(unsigned int *)file_class_memory;
   }
 
-  kfree(file_class_memory);
+  // kfree(file_class_memory);
 
   process_security = (unsigned int *)current_cred()->security;
   if (!process_security)
