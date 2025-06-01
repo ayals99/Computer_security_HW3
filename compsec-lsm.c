@@ -188,9 +188,8 @@ static int compsec_vm_enough_memory(struct mm_struct *mm, long pages)
 static int compsec_bprm_set_creds(struct linux_binprm *bprm)
 {
 	unsigned int file_class;
-  int len;
+  ssize_t len;
   unsigned int* new_exec_security;
-  // int rc;
 
   if (!bprm || !bprm->file || !bprm->file->f_path.dentry || !bprm->cred) {
      return 0;
@@ -199,9 +198,11 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   new_exec_security = (unsigned int *)bprm->cred->security;
   if (!new_exec_security)
     return -EACCES;
+  
+  file_class = COMPSEC_CLASS_UNCLASSIFIED;
 
   len = vfs_getxattr(bprm->file->f_path.dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
-  if (len < sizeof(file_class))
+  if (len != sizeof(file_class))
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
 
   *new_exec_security = file_class;
