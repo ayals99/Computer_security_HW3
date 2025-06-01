@@ -26,6 +26,11 @@ int validate_filename(char *filename) {
 	}
 	return 0;
 }
+int is_valid_class_number(long class) {
+	if (class > 3 || class < 0)
+	  return 0;
+	return 1;
+}
 
 int validate_class(char* class, unsigned int *class_int) {
 	int ret = 0;
@@ -33,20 +38,21 @@ int validate_class(char* class, unsigned int *class_int) {
 	int conversion_base = 10;
 	errno = 0;
 
-	unsigned int conversion = (unsigned int) strtol(class, &p, conversion_base);
+	long conversion = strtol(class, &p, conversion_base);
 	if (errno) {
-		perror("Class conversion error");
+		perror("compsec: Class conversion error");
 		return -1;
 	}
 	else if (*p) {
-		perror("Not all characters converted in class");
+		perror("compsec: Not all characters converted in class");
 		return -1;
 	}
-
-	if (conversion > MAX_CLASS)
+	if (!is_valid_class_number(conversion)){
+		printf("compsec: please input a valid class [0-3]");
 		return -1;
+	}
 	
-	*class_int = conversion;
+	*class_int = (unsigned int) conversion;
 
 	return 0;
 }

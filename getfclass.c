@@ -24,7 +24,7 @@ int validate_filename(char *filename) {
 	}
 	return 0;
 }
-
+  
 int main(int argc, char *argv[]) {
 	if (argc != NUMBER_OF_ARGS) {
 		print_usage(argv[0]);
