@@ -201,7 +201,7 @@ static int compsec_bprm_set_creds(struct linux_binprm *bprm)
   if (!new_exec_security)
     return -EACCES;
 
-  dentry = f_dentry;
+  dentry = bprm->file->f_dentry;
   inode = dentry->d_inode; 
 	len = inode->i_op->getxattr(dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
   if (len < 0)
