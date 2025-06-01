@@ -84,7 +84,8 @@ struct file_accesses {
 };
 
 static void print_bad_access(const char *process_name, unsigned int process_class,
-           ,const char *access_type, const char *file_name, unsigned int file_class)
+                             const char *access_type, const char *file_name,
+                             unsigned int file_class)
 {
   pr_info("compsec: Denied process %s, %s class %u, %s access to %s, class %u\n",
           process_name, process_class, access_type, file_name, file_class); 
@@ -661,7 +662,7 @@ static int compsec_file_permission(struct file *file, int mask)
     if (process_class <= file_class) {
       return 0;
     } else {
-      print_bad_access(process_name, process_class, filename, file_class, "write");
+      print_bad_access(process_name, process_class, "write", filename, file_class);
       return -EACCES;
     }
   }
@@ -670,7 +671,7 @@ static int compsec_file_permission(struct file *file, int mask)
     if (process_class >= file_class) {
       return 0;
     } else {
-      print_bad_access(process_name, process_class, filename, file_class, "read");
+      print_bad_access(process_name, process_class, "read", filename, file_class);
       return -EACCES;
     }
   }
