@@ -553,6 +553,8 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 	if (len < sizeof(file_class)) {
     *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
+
+  filename = dentry_from_inode->d_name.name;
   dput(dentry_from_inode);
 
   process_security = (unsigned int *)current_cred()->security;
