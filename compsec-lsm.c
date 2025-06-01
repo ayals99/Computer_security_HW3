@@ -395,23 +395,19 @@ static int compsec_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
 static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
                                   const void *value, size_t size, int flags)
 {
+  unsigned int file_class;
+  const char * filename;
   unsigned int *process_security;
   unsigned int process_class;
   ssize_t len;
-  // void *file_class_memory;
-  unsigned int file_class;
   struct inode *inode;
-
-  // file_class_memory = kzalloc(size, GFP_KERNEL);
-  // if (!file_class_memory)
-  //   return -ENOMEM;
+  char process_name[sizeof(current->comm)];
 
   inode = dentry->d_inode;
   if (!inode || !inode->i_op->getxattr)
     return -EACCES;
   
   len = inode->i_op->getxattr(dentry, name, (void*)&file_class, sizeof(file_class));
-  // len = vfs_getxattr(dentry, name, file_class_memory, size);
   
   // TODO: Remove before submitting
   pr_info("In %s, len is %d and class is %u\n", __func__, len, file_class);
@@ -420,16 +416,18 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
-  // kfree(file_class_memory);
-
   process_security = (unsigned int *)current_cred()->security;
   if (!process_security)
     return -ENOMEM;
 
   process_class = *process_security;
 
-  if (process_class > file_class)
+  get_task_comm(process_name, current);
+  filename = file_dentry->d_name.name;
+  if (process_class > file_class) {
+    print_bad_access(process_name, process_class, "write", filename, file_class);
     return -EACCES;
+  }
 
   return 0;
 }
@@ -526,32 +524,53 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
                                      bool alloc)
 {
   struct dentry *dentry_from_inode;
-  void *file_class;
+  const char * filename;
+  unsigned int *file_class;
 	ssize_t len;
+  unsigned int process_class;
+  char process_name[sizeof(current->comm)];
+  unsigned int *process_security;
   
-  if (!alloc) {
+  if (!alloc)
 		return 0;
-	}
 
   file_class = kzalloc(sizeof(unsigned int), GFP_KERNEL);
   if (!file_class)
     return -ENOMEM;
 
 	dentry_from_inode = d_find_alias((struct inode *)inode);  
-  if (!dentry_from_inode) {
-    kfree (file_class);
+  if (!dentry_from_inode){
+    kfree(file_class);
     return -EINVAL;
   }
 
-	len = vfs_getxattr(dentry_from_inode, name, file_class, sizeof(unsigned int));
-	if (len < 0) {
-    kfree (file_class);
-    dput(dentry_from_inode);
-    return len;
+  if (!inode->i_op->getxattr){
+    kfree(file_class);
+    return -EACCES;
+  }
+ 
+  len = inode->i_op->getxattr(dentry_from_inode, name, (void*)file_class, sizeof(file_class));
+	if (len < sizeof(file_class)) {
+    *file_class = COMPSEC_CLASS_UNCLASSIFIED;
+  }
+  dput(dentry_from_inode);
+
+  process_security = (unsigned int *)current_cred()->security;
+  if (!process_security){
+    kfree(file_class);
+    return -EACCES;
   }
 
-  *buffer = file_class;
-  dput(dentry_from_inode);
+  get_task_comm(process_name, current);
+  process_class = *process_security;
+
+  if (process_class < *file_class) {
+    print_bad_access(process_name, process_class, "read", filename, *file_class);
+    kfree(file_class);
+    return -EACCES;
+  }
+
+  *buffer = *file_class;
 
   return len;
 }
