@@ -423,7 +423,7 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   process_class = *process_security;
 
   get_task_comm(process_name, current);
-  filename = file_dentry->d_name.name;
+  filename = dentry->d_name.name;
   if (process_class > file_class) {
     print_bad_access(process_name, process_class, "write", filename, file_class);
     return -EACCES;
@@ -570,7 +570,7 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
     return -EACCES;
   }
 
-  *buffer = *file_class;
+  *buffer = (void*)*file_class;
 
   return len;
 }
