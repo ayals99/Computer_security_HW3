@@ -381,12 +381,12 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
                                   const void *value, size_t size, int flags)
 {
   unsigned int file_class;
-  const char * filename;
-  unsigned int *process_security;
-  unsigned int process_class;
+  // const char * filename;
+  // unsigned int *process_security;
+  // unsigned int process_class;
   ssize_t len;
   struct inode *inode;
-  char process_name[sizeof(current->comm)];
+  // char process_name[sizeof(current->comm)];
 
   inode = dentry->d_inode;
   if (!inode || !inode->i_op->getxattr)
@@ -397,6 +397,24 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   if (len < sizeof(file_class)) {
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
+
+  // NOTE:
+  // Initially we thought to implement Bell LaPadula when accessing the EA
+  // themselves.
+  // This led to a contradiction when a process with class 0 tried to
+  // perform setfclass on a file with class 2 to lower its class:
+  //    The process is allowed to write to the EA, but it can't read them.
+  //    The assigment demanded that if the user tries to lower the class then he
+  //    gets a prompt that asks him if he's sure.
+  //    This is a contradiction because the process runs with the class of setfclass
+  //    which (by default) is 0. Therefore, setfclass can't read the EA from the file
+  //    in order to prompt the user.
+  //    After carefully re-reading the assignment we came to the conslusion
+  //    that the Bell LaPadula only for read and write in file accesses and not
+  //    for the EA themselves.
+  //    In terms of security we decided to allow the user to use getxattr but
+  //    the LSM still enforces setxattr Bell LaPadula permission so the EA can't 
+  //    be changed by a userspace program that uses setxatrr.
 
   process_security = (unsigned int *)current_cred()->security;
   if (!process_security)

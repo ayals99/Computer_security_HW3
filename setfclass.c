@@ -66,11 +66,12 @@ int validate_user_input(char *filename, char *class, unsigned int *class_int) {
 
 int aux_set_class(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
 	unsigned int current_file_class = COMPSEC_MAX_CLASS + 1;
+	ssize_t len = 0;
 
 	len = getxattr(fpath, COMPSEC_EA_NAME, &current_file_class, sizeof(unsigned int));
 	if (len == sizeof(current_file_class) && global_class_int < current_file_class) {
 		printf("compsec: Lower class from %u to %u for %s? [y/n]\n",
-			    current_file_class, class_int, fpath);
+			    current_file_class, global_class_int, fpath);
 		char answer;
 		scanf("%c", &answer);
 		if (answer != 'y')
