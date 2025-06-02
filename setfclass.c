@@ -65,6 +65,17 @@ int validate_user_input(char *filename, char *class, unsigned int *class_int) {
 }
 
 int aux_set_class(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
+	unsigned int current_file_class = COMPSEC_MAX_CLASS + 1;
+
+	len = getxattr(fpath, COMPSEC_EA_NAME, &current_file_class, sizeof(unsigned int));
+	if (len == sizeof(current_file_class) && global_class_int < current_file_class) {
+		printf("compsec: Lower class from %u to %u for %s? [y/n]\n",
+			    current_file_class, class_int, fpath);
+		char answer;
+		scanf("%c", &answer);
+		if (answer != 'y')
+			return 1;
+	}
 	if (setxattr(fpath, COMPSEC_EA_NAME, &global_class_int, sizeof(unsigned int), 0) != 0) {
 		perror(fpath);
 	}
@@ -113,11 +124,6 @@ int main(int argc, char *argv[]) {
 		return ret;
 	}
 
-	// For Debug:
-	// printf("Class: %u\n", class_int);
-	// printf("Recursive: %s\n", recursive_flag ? "Yes" : "No");
-	// printf("Filename: %s\n", filename);
-
 	char *found_path = realpath(filename, file_path);
 	if (!found_path) {
 		return 1;
@@ -131,7 +137,8 @@ int main(int argc, char *argv[]) {
 
 	len = getxattr(file_path, COMPSEC_EA_NAME, &current_file_class, sizeof(unsigned int));
 	if (len == sizeof(current_file_class) && class_int < current_file_class) {
-		printf("compsec: Lower class from %u to %u? [y/n]\n",current_file_class, class_int);
+		printf("compsec: Lower class from %u to %u for %s? [y/n]\n",
+			    current_file_class, class_int, file_path);
 		char answer;
 		scanf("%c", &answer);
 		if (answer != 'y')
