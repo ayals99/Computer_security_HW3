@@ -381,12 +381,12 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
                                   const void *value, size_t size, int flags)
 {
   unsigned int file_class;
-  // const char * filename;
-  // unsigned int *process_security;
-  // unsigned int process_class;
+  const char * filename;
+  unsigned int *process_security;
+  unsigned int process_class;
   ssize_t len;
   struct inode *inode;
-  // char process_name[sizeof(current->comm)];
+  char process_name[sizeof(current->comm)];
 
   inode = dentry->d_inode;
   if (!inode || !inode->i_op->getxattr)
