@@ -396,9 +396,9 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   if (!inode || !inode->i_op->getxattr)
     return -EACCES;
   
+  file_class = COMPSEC_CLASS_UNCLASSIFIED;
   len = inode->i_op->getxattr(dentry, name, (void*)&file_class, sizeof(file_class));
-
-  if (len < size) {
+  if (len < sizeof(file_class)) {
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
@@ -415,7 +415,7 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
     return -EACCES;
   }
   pr_info("compsec: allowed %s class %u to set file %s to class %u",
-           process_name, process_class, filename, file_class);
+           process_name, process_class, filename, (unsigned int)*value);
 
   return 0;
 }
@@ -536,7 +536,8 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
     kfree(file_class);
     return -EACCES;
   }
-
+  
+  *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   len = inode->i_op->getxattr(dentry_from_inode, name, (void*)file_class, sizeof(unsigned int));
 
   // // TODO: Remove before submitting
