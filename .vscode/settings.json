@@ -3,7 +3,9 @@
         "stdio.h": "c",
         "string.h": "c",
         "types.h": "c",
-        "limits.h": "c"
+        "limits.h": "c",
+        "typeinfo": "c",
+        "type_traits": "c"
     },
     "editor.rulers": [80, 100]
 }
