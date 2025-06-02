@@ -79,10 +79,6 @@
 #define COMPSEC_INIT_PID 1
 extern struct security_operations *security_ops;
 
-// struct file_accesses {
-//   unsigned int class;
-// };
-
 static void print_bad_access(const char *process_name, unsigned int process_class,
                              const char *access_type, const char *file_name,
                              unsigned int file_class)
@@ -427,25 +423,7 @@ static void compsec_inode_post_setxattr(struct dentry *dentry, const char *name,
 }
 
 static int compsec_inode_getxattr(struct dentry *dentry, const char *name)
-{
-  // struct file_accesses *process_security;
-  // unsigned int file_class;
-  // unsigned int process_class;
-  // ssize_t len;
-
-  // len = vfs_getxattr(dentry, name, (void*)&file_class, sizeof(unsigned int));
-  // if (len < 0)
-  //   return -EACCES;
-
-  // process_security = (struct file_accesses *)current_cred()->security;
-  // if (!process_security)
-  //   return -EACCES;
-
-  // process_class = process_security->class;
-
-  // if (process_class > file_class)
-  //   return -EACCES;
-  
+{  
   return 0;
 }
 
@@ -513,12 +491,8 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
 {
   struct dentry *dentry_from_inode;
   unsigned int *file_class;
-  const char *filename;
 	ssize_t len;
-  unsigned int process_class;
-  char process_name[sizeof(current->comm)];
-  unsigned int *process_security;
-  
+
   if (!alloc)
 		return 0;
 
@@ -540,34 +514,11 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   len = inode->i_op->getxattr(dentry_from_inode, name, (void*)file_class, sizeof(unsigned int));
 
-  // // TODO: Remove before submitting
-  filename = dentry_from_inode->d_name.name;
-
-  if (*filename == 'a' && ((filename + 1) == NULL)) {
-    pr_info("copmsec: In %s, len is %d and class is %u\n", __func__, len, *file_class);
-    pr_info("In function %s, filename %s", __func__, filename);
-  }
-
 	if (len < sizeof(unsigned int)) {
     *file_class = COMPSEC_CLASS_UNCLASSIFIED;
   }
 
   dput(dentry_from_inode);
-
-  process_security = (unsigned int *)current_cred()->security;
-  if (!process_security){
-    kfree(file_class);
-    return -EACCES;
-  }
-
-  get_task_comm(process_name, current);
-  process_class = *process_security;
-
-  // if (process_class < (*file_class)) {
-  //   print_bad_access(process_name, process_class, "read", filename, *file_class);
-  //   kfree(file_class);
-  //   return -EACCES;
-  // }
 
   *buffer = (void*)file_class;
   
@@ -631,12 +582,6 @@ static int compsec_file_permission(struct file *file, int mask)
   len = vfs_getxattr(file_dentry, COMPSEC_EA_NAME, &file_class, sizeof(file_class));
 
   if (len != sizeof(file_class))
-    file_class = COMPSEC_CLASS_UNCLASSIFIED;
-  
-  // if (file_class > COMPSEC_CLASS_TOP_SECRET)
-  //   file_class = COMPSEC_CLASS_UNCLASSIFIED;
-
-	if (len < sizeof(unsigned int))
     file_class = COMPSEC_CLASS_UNCLASSIFIED;
 
   /*
@@ -895,10 +840,6 @@ static void compsec_task_to_inode(struct task_struct *p,
                                   struct inode *inode)
 {
 }
-
-
-
-
 
 /**
  * compsec_skb_peerlbl_sid - Determine the peer label of a packet
