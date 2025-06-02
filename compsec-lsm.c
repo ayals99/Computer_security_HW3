@@ -414,6 +414,8 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
     print_bad_access(process_name, process_class, "write", filename, file_class);
     return -EACCES;
   }
+  pr_info("compsec: allowed %s class %u to set file %s to class %u",
+           process_name, process_class, filename, file_class);
 
   return 0;
 }
@@ -560,14 +562,14 @@ static int compsec_inode_getsecurity(const struct inode *inode, const char *name
   get_task_comm(process_name, current);
   process_class = *process_security;
 
-  if (process_class < (*file_class)) {
-    print_bad_access(process_name, process_class, "read", filename, *file_class);
-    kfree(file_class);
-    return -EACCES;
-  }
+  // if (process_class < (*file_class)) {
+  //   print_bad_access(process_name, process_class, "read", filename, *file_class);
+  //   kfree(file_class);
+  //   return -EACCES;
+  // }
 
   *buffer = (void*)file_class;
-
+  
   return (int)len;
 }
 
