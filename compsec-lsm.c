@@ -415,7 +415,7 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
     return -EACCES;
   }
   pr_info("compsec: allowed %s class %u to set file %s to class %u",
-           process_name, process_class, filename, (unsigned int)*value);
+           process_name, process_class, filename, *(unsigned int*)value);
 
   return 0;
 }
