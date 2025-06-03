@@ -381,12 +381,12 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
                                   const void *value, size_t size, int flags)
 {
   unsigned int file_class;
-  const char * filename;
-  unsigned int *process_security;
-  unsigned int process_class;
+  // const char * filename;
+  // unsigned int *process_security;
+  // unsigned int process_class;
   ssize_t len;
   struct inode *inode;
-  char process_name[sizeof(current->comm)];
+  // char process_name[sizeof(current->comm)];
 
   inode = dentry->d_inode;
   if (!inode || !inode->i_op->getxattr)
@@ -410,26 +410,23 @@ static int compsec_inode_setxattr(struct dentry *dentry, const char *name,
   //    which (by default) is 0. Therefore, setfclass can't read the EA from the file
   //    in order to prompt the user.
   //    After carefully re-reading the assignment we came to the conslusion
-  //    that the Bell LaPadula only for read and write in file accesses and not
-  //    for the EA themselves.
-  //    In terms of security we decided to allow the user to use getxattr but
-  //    the LSM still enforces setxattr Bell LaPadula permission so the EA can't 
-  //    be changed by a userspace program that uses setxatrr.
+  //    that the Bell LaPadula is only for read and write in *file accesses* and not
+  //    for the EAs themselves.
+  //    In the comments below you can see the implementation of Bell LaPadula on setxattr,
+  //    if you like.
 
-  process_security = (unsigned int *)current_cred()->security;
-  if (!process_security)
-    return -ENOMEM;
+  // process_security = (unsigned int *)current_cred()->security;
+  // if (!process_security)
+  //   return -ENOMEM;
 
-  process_class = *process_security;
+  // process_class = *process_security;
 
-  get_task_comm(process_name, current);
-  filename = dentry->d_name.name;
-  if (process_class > file_class) {
-    print_bad_access(process_name, process_class, "write", filename, file_class);
-    return -EACCES;
-  }
-  pr_info("compsec: allowed %s class %u to set file %s to class %u",
-           process_name, process_class, filename, *(unsigned int*)value);
+  // get_task_comm(process_name, current);
+  // filename = dentry->d_name.name;
+  // if (process_class > file_class) {
+  //   print_bad_access(process_name, process_class, "write", filename, file_class);
+  //   return -EACCES;
+  // }
 
   return 0;
 }
